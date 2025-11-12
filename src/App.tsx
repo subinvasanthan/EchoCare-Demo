@@ -41,7 +41,7 @@ function App() {
       else if (path === '/signup') setCurrentView('signup');
       else if (path === '/forgot') setCurrentView('forgot');
       else if (path === '/reset-password') setCurrentView('reset-password');
-      else setCurrentView('landing'); // stay on landing even if signed-in (so ProfileSection can show)
+      else setCurrentView('landing'); // stay on landing even if signed in (so ProfileSection can show)
     };
 
     applyRoute();

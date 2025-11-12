@@ -11,7 +11,7 @@ export default function VideoSection() {
           See EchoCare in Action
         </h2>
         <p className="text-lg text-gray-600 dark:text-gray-300">
-          Watch a quick preview of how reminders and updates keep families connected.
+          Watch our quick preview of how reminders and updates keep families connected.
         </p>
       </div>
 

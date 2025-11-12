@@ -2,7 +2,7 @@ import React, { useMemo } from 'react';
 
 type CareImagesCarouselProps = {
   images?: string[];
-  speedMs?: number; // higher is slower
+  speedMs?: number; // higher isslower
 };
 
 export default function CareImagesCarousel({

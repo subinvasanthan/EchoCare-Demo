@@ -5,7 +5,7 @@ import ProfileMenu from './ProfileMenu';
 interface HeaderProps {
   darkMode: boolean;
   toggleDarkMode: () => void;
-  user?: any; // <-- added
+  user?: any; // <--added
 }
 
 export default function Header({ darkMode, toggleDarkMode, user }: HeaderProps) {

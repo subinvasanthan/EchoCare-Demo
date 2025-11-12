@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 
 type Props = {
-  drivePreviewUrl?: string;               // optional: full Google Drive /preview URL
+  drivePreviewUrl?: string;               // optional: fullGoogle Drive /preview URL
   mp4Url?: string;                        // optional: direct mp4 URL (preferred for in-site playback)
   title?: string;
   subtitle?: string;

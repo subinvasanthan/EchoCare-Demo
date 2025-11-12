@@ -225,18 +225,3 @@
     animation: riseLoop 10s linear infinite;
   }
 }
-
-@media (prefers-reduced-motion: reduce) {
-  .animate-fade-in,
-  .animate-slide-up {
-    animation: none;
-    opacity: 1;
-    transform: none;
-  }
-}
-
-@layer utilities {
-  .text-fill-transparent {
-    -webkit-text-fill-color: transparent;
-  }
-}
