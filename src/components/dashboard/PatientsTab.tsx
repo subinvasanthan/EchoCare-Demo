@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
 import { WebhookService } from '../../lib/webhook';
-import { Plus, Check, AlertCircle, Search, Edit, Trash2, X, ChevronDown, ChevronUp, Calendar, Pill, Bell, Clock, User, Phone, MapPin, FileText } from 'lucide-react';
+import { Plus, Check, AlertCircle, Search, Edit, Trash2, X, ChevronDown, ChevronUp, Calendar, Pill, Bell, Clock, User, Phone, MapPin } from 'lucide-react';
 
 interface PatientsTabProps {
   user: any;
@@ -10,12 +10,12 @@ interface PatientsTabProps {
 interface CareRecipient {
   id: string;
   full_name: string;
-  primary_contact: string;
-  secondary_contact: string;
-  date_of_birth: string;
-  gender: string;
-  address: string;
-  notes: string;
+  primary_contact: string | null;
+  secondary_contact: string | null;
+  date_of_birth: string | null;
+  gender: string | null;
+  address: string | null;
+  notes: string | null;
   created_at: string;
 }
 
@@ -27,11 +27,11 @@ interface Medication {
   frequency_unit: string;
   frequency_value: number;
   times_per_day: number;
-  dose_times: string[];
+  dose_times: string[] | string | null;
   food_timing: string;
-  start_date: string;
-  end_date: string;
-  notes: string;
+  start_date: string | null;
+  end_date: string | null;
+  notes: string | null;
   created_at: string;
 }
 
@@ -41,8 +41,8 @@ interface Reminder {
   description: string;
   frequency_unit: string;
   frequency_value: number;
-  start_datetime: string;
-  end_datetime: string;
+  start_datetime: string | null;
+  end_datetime: string | null;
   repeat_count: number;
   notify_channel: string;
   created_at: string;
@@ -53,11 +53,11 @@ interface Appointment {
   doctor_name: string;
   specialization: string;
   hospital: string;
-  address: string;
-  phone: string;
-  appointment_at: string;
-  status: string;
-  notes: string;
+  address: string | null;
+  phone: string | null;
+  appointment_at: string | null;
+  status: string | null;
+  notes: string | null;
   created_at: string;
 }
 
@@ -468,6 +468,108 @@ export default function PatientsTab({ user }: PatientsTabProps) {
     });
   };
 
+  const handleDeleteMedication = async (patientId: string, medicationId: string) => {
+    const confirmDelete = window.confirm('Are you sure you want to delete this medication plan?');
+    if (!confirmDelete) return;
+
+    try {
+      const { error } = await supabase
+        .from('medication_plans')
+        .delete()
+        .eq('id', medicationId);
+
+      if (error) throw error;
+
+      setMessage({ type: 'success', text: 'Medication plan deleted successfully!' });
+
+      setPatientData(prev => {
+        const patientEntry = prev[patientId];
+        if (!patientEntry) return prev;
+
+        const updatedMedications = patientEntry.medications.filter(med => med.id !== medicationId);
+
+        return {
+          ...prev,
+          [patientId]: {
+            ...patientEntry,
+            medications: updatedMedications,
+          },
+        };
+      });
+    } catch (error: any) {
+      console.error('Error deleting medication:', error);
+      setMessage({ type: 'error', text: error.message || 'Failed to delete medication plan' });
+    }
+  };
+
+  const handleDeleteReminder = async (patientId: string, reminderId: string) => {
+    const confirmDelete = window.confirm('Are you sure you want to delete this reminder?');
+    if (!confirmDelete) return;
+
+    try {
+      const { error } = await supabase
+        .from('general_reminders')
+        .delete()
+        .eq('id', reminderId);
+
+      if (error) throw error;
+
+      setMessage({ type: 'success', text: 'Reminder deleted successfully!' });
+
+      setPatientData(prev => {
+        const patientEntry = prev[patientId];
+        if (!patientEntry) return prev;
+
+        const updatedReminders = patientEntry.reminders.filter(reminder => reminder.id !== reminderId);
+
+        return {
+          ...prev,
+          [patientId]: {
+            ...patientEntry,
+            reminders: updatedReminders,
+          },
+        };
+      });
+    } catch (error: any) {
+      console.error('Error deleting reminder:', error);
+      setMessage({ type: 'error', text: error.message || 'Failed to delete reminder' });
+    }
+  };
+
+  const handleDeleteAppointment = async (patientId: string, appointmentId: string) => {
+    const confirmDelete = window.confirm('Are you sure you want to delete this appointment?');
+    if (!confirmDelete) return;
+
+    try {
+      const { error } = await supabase
+        .from('appointments')
+        .delete()
+        .eq('id', appointmentId);
+
+      if (error) throw error;
+
+      setMessage({ type: 'success', text: 'Appointment deleted successfully!' });
+
+      setPatientData(prev => {
+        const patientEntry = prev[patientId];
+        if (!patientEntry) return prev;
+
+        const updatedAppointments = patientEntry.appointments.filter(appointment => appointment.id !== appointmentId);
+
+        return {
+          ...prev,
+          [patientId]: {
+            ...patientEntry,
+            appointments: updatedAppointments,
+          },
+        };
+      });
+    } catch (error: any) {
+      console.error('Error deleting appointment:', error);
+      setMessage({ type: 'error', text: error.message || 'Failed to delete appointment' });
+    }
+  };
+
   const getUpcomingItems = (items: any[], dateField: string, limit: number = 5) => {
     const now = new Date();
     return items
@@ -479,46 +581,120 @@ export default function PatientsTab({ user }: PatientsTabProps) {
       .slice(0, limit);
   };
 
-  const formatDate = (dateString: string) => {
+  const formatDate = (dateString: string | null) => {
     if (!dateString) return 'Not set';
     return new Date(dateString).toLocaleDateString();
   };
 
-  const formatDateTime = (dateString: string) => {
+  const formatDateTime = (dateString: string | null) => {
     if (!dateString) return 'Not set';
     return new Date(dateString).toLocaleString();
   };
 
+  const normalizeDoseTimes = (doseTimes: string[] | string | null): string[] => {
+    if (Array.isArray(doseTimes)) return doseTimes;
+    if (typeof doseTimes === 'string' && doseTimes.trim()) {
+      try {
+        const parsed = JSON.parse(doseTimes);
+        return Array.isArray(parsed) ? parsed : [];
+      } catch (error) {
+        console.warn('Failed to parse dose_times:', error);
+      }
+    }
+    return [];
+  };
+
   const renderMedications = (patientId: string) => {
     const medications = patientData[patientId]?.medications || [];
-    const upcomingMedications = getUpcomingItems(medications, 'start_date');
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const activeMedications = medications.filter((med) => {
+      if (!med.end_date) return true;
+      const medEndDate = new Date(med.end_date);
+      medEndDate.setHours(0, 0, 0, 0);
+      return medEndDate >= today;
+    });
+
+    const pastMedications = medications.filter((med) => {
+      if (!med.end_date) return false;
+      const medEndDate = new Date(med.end_date);
+      medEndDate.setHours(0, 0, 0, 0);
+      return medEndDate < today;
+    });
+
+    const sortByStartDateDesc = (list: Medication[]) =>
+      [...list].sort((a, b) => {
+        const aDate = a.start_date ? new Date(a.start_date).getTime() : 0;
+        const bDate = b.start_date ? new Date(b.start_date).getTime() : 0;
+        return bDate - aDate;
+      });
+
+    const renderMedicationCard = (med: Medication, variant: 'active' | 'past') => {
+      const doseTimes = normalizeDoseTimes(med.dose_times);
+      const containerStyles =
+        variant === 'active'
+          ? 'bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800'
+          : 'bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 opacity-80';
+
+      return (
+        <div key={med.id} className={`${containerStyles} rounded-lg p-4`}>
+          <div className="flex items-start justify-between">
+            <div className="flex-1">
+              <h4 className="font-semibold text-green-800 dark:text-green-200">{med.medicine_name}</h4>
+              <p className="text-sm text-green-600 dark:text-green-300">
+                {med.dosage} • {med.form} • {med.frequency_value} {med.frequency_unit}
+              </p>
+              <p className="text-xs text-green-500 dark:text-green-400 mt-1">
+                {formatDate(med.start_date)} - {formatDate(med.end_date)}
+              </p>
+              <div className="text-xs text-green-500 dark:text-green-300 mt-2 space-y-1">
+                <p>Times per day: {med.times_per_day ?? 'Not set'}</p>
+                {doseTimes.length > 0 && (
+                  <p>Dose times: {doseTimes.join(', ')}</p>
+                )}
+                {med.food_timing && <p>Food timing: {med.food_timing}</p>}
+                {med.notes && <p className="italic">Notes: {med.notes}</p>}
+              </div>
+            </div>
+            <div className="flex flex-col items-end gap-2">
+              <Pill className="w-5 h-5 text-green-600 dark:text-green-400" />
+              <button
+                onClick={() => handleDeleteMedication(patientId, med.id)}
+                className="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors text-xs"
+              >
+                <Trash2 className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+    };
 
     return (
       <div className="space-y-3">
-        {upcomingMedications.length === 0 ? (
-          <p className="text-gray-500 dark:text-gray-400 text-center py-4">No medications added yet</p>
-        ) : (
-          upcomingMedications.map((med) => (
-            <div key={med.id} className="bg-green-50 dark:bg-green-900/20 rounded-lg p-4 border border-green-200 dark:border-green-800">
-              <div className="flex items-start justify-between">
-                <div className="flex-1">
-                  <h4 className="font-semibold text-green-800 dark:text-green-200">{med.medicine_name}</h4>
-                  <p className="text-sm text-green-600 dark:text-green-300">
-                    {med.dosage} • {med.form} • {med.frequency_value} {med.frequency_unit}
-                  </p>
-                  <p className="text-xs text-green-500 dark:text-green-400 mt-1">
-                    {formatDate(med.start_date)} - {formatDate(med.end_date)}
-                  </p>
-                </div>
-                <Pill className="w-5 h-5 text-green-600 dark:text-green-400" />
-              </div>
-            </div>
-          ))
+        {medications.length === 0 && (
+          <p className="text-gray-500 dark:text-gray-400 text-center py-4">
+            No medication plans found for this patient.
+          </p>
         )}
-        {medications.length > 5 && (
-          <button className="w-full text-center text-teal-600 dark:text-teal-400 hover:text-teal-700 dark:hover:text-teal-300 text-sm font-medium py-2">
-            View All ({medications.length} total)
-          </button>
+
+        {activeMedications.length > 0 && (
+          <div className="space-y-2">
+            <h4 className="text-sm font-semibold text-green-700 dark:text-green-300 uppercase tracking-wide">
+              Active plans
+            </h4>
+            {sortByStartDateDesc(activeMedications).map((med) => renderMedicationCard(med, 'active'))}
+          </div>
+        )}
+
+        {pastMedications.length > 0 && (
+          <div className="space-y-2 pt-4 border-t border-dashed border-green-200 dark:border-green-800">
+            <h4 className="text-sm font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wide">
+              Past plans
+            </h4>
+            {sortByStartDateDesc(pastMedications).map((med) => renderMedicationCard(med, 'past'))}
+          </div>
         )}
       </div>
     );
@@ -538,12 +714,34 @@ export default function PatientsTab({ user }: PatientsTabProps) {
               <div className="flex items-start justify-between">
                 <div className="flex-1">
                   <h4 className="font-semibold text-yellow-800 dark:text-yellow-200">{reminder.title}</h4>
-                  <p className="text-sm text-yellow-600 dark:text-yellow-300">{reminder.description}</p>
-                  <p className="text-xs text-yellow-500 dark:text-yellow-400 mt-1">
-                    {reminder.frequency_value} {reminder.frequency_unit} • {reminder.notify_channel}
-                  </p>
+                  {reminder.description && (
+                    <p className="text-sm text-yellow-600 dark:text-yellow-300">{reminder.description}</p>
+                  )}
+                  <div className="mt-2 space-y-1 text-xs text-yellow-600 dark:text-yellow-300">
+                    <p>
+                      Frequency: {reminder.frequency_value} {reminder.frequency_unit}
+                    </p>
+                    <p>Notifications: {reminder.notify_channel}</p>
+                    <p>
+                      Starts: {formatDateTime(reminder.start_datetime)}
+                    </p>
+                    <p>
+                      Ends: {formatDateTime(reminder.end_datetime)}
+                    </p>
+                    {typeof reminder.repeat_count === 'number' && reminder.repeat_count > 0 && (
+                      <p>Repeat count: {reminder.repeat_count}</p>
+                    )}
+                  </div>
                 </div>
-                <Bell className="w-5 h-5 text-yellow-600 dark:text-yellow-400" />
+                <div className="flex flex-col items-end gap-2">
+                  <Bell className="w-5 h-5 text-yellow-600 dark:text-yellow-400" />
+                  <button
+                    onClick={() => handleDeleteReminder(patientId, reminder.id)}
+                    className="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors text-xs"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
               </div>
             </div>
           ))
@@ -559,32 +757,167 @@ export default function PatientsTab({ user }: PatientsTabProps) {
 
   const renderAppointments = (patientId: string) => {
     const appointments = patientData[patientId]?.appointments || [];
-    const upcomingAppointments = getUpcomingItems(appointments, 'appointment_at');
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    type RGB = [number, number, number];
+
+    const red: RGB = [239, 68, 68];
+    const yellow: RGB = [250, 204, 21];
+    const green: RGB = [34, 197, 94];
+
+    const interpolateColor = (from: RGB, to: RGB, factor: number): RGB => {
+      const clamped = Math.min(Math.max(factor, 0), 1);
+      return [
+        Math.round(from[0] + (to[0] - from[0]) * clamped),
+        Math.round(from[1] + (to[1] - from[1]) * clamped),
+        Math.round(from[2] + (to[2] - from[2]) * clamped),
+      ];
+    };
+
+    const lightenColor = (color: RGB, amount: number): RGB => {
+      const clamped = Math.min(Math.max(amount, 0), 1);
+      return [
+        Math.round(color[0] + (255 - color[0]) * clamped),
+        Math.round(color[1] + (255 - color[1]) * clamped),
+        Math.round(color[2] + (255 - color[2]) * clamped),
+      ];
+    };
+
+    const rgbToRgba = (color: RGB, alpha: number) => {
+      const clamped = Math.min(Math.max(alpha, 0), 1);
+      return `rgba(${color[0]}, ${color[1]}, ${color[2]}, ${clamped})`;
+    };
+
+    const blendRedYellowGreen = (progress: number): RGB => {
+      const clamped = Math.min(Math.max(progress, 0), 1);
+      if (clamped >= 0.5) {
+        const ratio = (clamped - 0.5) / 0.5;
+        return interpolateColor(yellow, red, ratio);
+      }
+      const ratio = clamped / 0.5;
+      return interpolateColor(green, yellow, ratio);
+    };
+
+    const validAppointments = appointments.filter((appointment) => appointment.appointment_at);
+
+    const sortedAppointments = validAppointments.sort((a, b) => {
+      const aTime = a.appointment_at ? new Date(a.appointment_at).getTime() : Number.MAX_SAFE_INTEGER;
+      const bTime = b.appointment_at ? new Date(b.appointment_at).getTime() : Number.MAX_SAFE_INTEGER;
+      return aTime - bTime;
+    });
+
+    const upcomingAppointments = sortedAppointments.filter((appointment) => {
+      if (!appointment.appointment_at) return false;
+      const appointmentDate = new Date(appointment.appointment_at);
+      appointmentDate.setHours(0, 0, 0, 0);
+      return appointmentDate >= today;
+    });
+
+    const pastAppointments = sortedAppointments.filter((appointment) => {
+      if (!appointment.appointment_at) return true;
+      const appointmentDate = new Date(appointment.appointment_at);
+      appointmentDate.setHours(0, 0, 0, 0);
+      return appointmentDate < today;
+    });
+
+    const getGradientStyle = (index: number, total: number) => {
+      const denominator = Math.max(total - 1, 1);
+      const progress = total <= 1 ? 1 : 1 - index / denominator;
+      const baseColor = blendRedYellowGreen(progress);
+      const lightColor = lightenColor(baseColor, 0.45);
+      return {
+        background: `linear-gradient(135deg, ${rgbToRgba(lightColor, 0.9)}, ${rgbToRgba(baseColor, 0.85)})`,
+        borderColor: rgbToRgba(baseColor, 0.7),
+      };
+    };
 
     return (
       <div className="space-y-3">
-        {upcomingAppointments.length === 0 ? (
+        {sortedAppointments.length === 0 && (
           <p className="text-gray-500 dark:text-gray-400 text-center py-4">No appointments scheduled yet</p>
-        ) : (
-          upcomingAppointments.map((appointment) => (
-            <div key={appointment.id} className="bg-purple-50 dark:bg-purple-900/20 rounded-lg p-4 border border-purple-200 dark:border-purple-800">
-              <div className="flex items-start justify-between">
-                <div className="flex-1">
-                  <h4 className="font-semibold text-purple-800 dark:text-purple-200">Dr. {appointment.doctor_name}</h4>
-                  <p className="text-sm text-purple-600 dark:text-purple-300">{appointment.specialization}</p>
-                  <p className="text-xs text-purple-500 dark:text-purple-400 mt-1">
-                    {formatDateTime(appointment.appointment_at)} • {appointment.status}
-                  </p>
-                </div>
-                <Calendar className="w-5 h-5 text-purple-600 dark:text-purple-400" />
-              </div>
-            </div>
-          ))
         )}
-        {appointments.length > 5 && (
-          <button className="w-full text-center text-teal-600 dark:text-teal-400 hover:text-teal-700 dark:hover:text-teal-300 text-sm font-medium py-2">
-            View All ({appointments.length} total)
-          </button>
+
+        {upcomingAppointments.length > 0 && (
+          <div className="space-y-2">
+            <h4 className="text-sm font-semibold text-purple-700 dark:text-purple-300 uppercase tracking-wide">
+              Upcoming appointments
+            </h4>
+            {upcomingAppointments.map((appointment, index) => (
+              <div
+                key={appointment.id}
+                className="rounded-lg p-4 border shadow-sm"
+                style={getGradientStyle(index, upcomingAppointments.length)}
+              >
+                <div className="flex items-start justify-between">
+                  <div className="flex-1 text-gray-900 dark:text-gray-100">
+                    <h4 className="font-semibold">Dr. {appointment.doctor_name}</h4>
+                    <p className="text-sm text-gray-800/90 dark:text-gray-200/90">{appointment.specialization}</p>
+                    <p className="text-xs text-gray-800/80 dark:text-gray-200/80 mt-1">
+                      {formatDateTime(appointment.appointment_at)}
+                    </p>
+                    {appointment.hospital && (
+                      <p className="text-xs text-gray-800/80 dark:text-gray-200/80 mt-1">Hospital: {appointment.hospital}</p>
+                    )}
+                    {appointment.address && (
+                      <p className="text-xs text-gray-800/80 dark:text-gray-200/80">Address: {appointment.address}</p>
+                    )}
+                    {appointment.phone && (
+                      <p className="text-xs text-gray-800/80 dark:text-gray-200/80">Contact: {appointment.phone}</p>
+                    )}
+                    {appointment.notes && (
+                      <p className="text-xs italic text-gray-800/80 dark:text-gray-200/80 mt-1">Notes: {appointment.notes}</p>
+                    )}
+                  </div>
+                  <div className="flex flex-col items-end gap-2">
+                    <Calendar className="w-5 h-5 text-gray-900 dark:text-gray-100 opacity-80" />
+                    <button
+                      onClick={() => handleDeleteAppointment(patientId, appointment.id)}
+                      className="p-2 text-gray-900 dark:text-gray-100 hover:bg-black/10 dark:hover:bg-white/20 rounded-lg transition-colors text-xs"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {pastAppointments.length > 0 && (
+          <div className="space-y-2 pt-4 border-t border-dashed border-purple-200 dark:border-purple-800">
+            <h4 className="text-sm font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wide">
+              Past appointments
+            </h4>
+            {pastAppointments.map((appointment) => (
+              <div
+                key={appointment.id}
+                className="bg-purple-50 dark:bg-purple-900/10 rounded-lg p-4 border border-purple-200 dark:border-purple-800 opacity-80"
+              >
+                <div className="flex items-start justify-between">
+                  <div className="flex-1 text-purple-900 dark:text-purple-200">
+                    <h4 className="font-semibold">Dr. {appointment.doctor_name}</h4>
+                    <p className="text-sm">{appointment.specialization}</p>
+                    <p className="text-xs mt-1">
+                      {formatDateTime(appointment.appointment_at)}
+                    </p>
+                    {appointment.notes && (
+                      <p className="text-xs italic mt-1">Notes: {appointment.notes}</p>
+                    )}
+                  </div>
+                  <div className="flex flex-col items-end gap-2">
+                    <Calendar className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+                    <button
+                      onClick={() => handleDeleteAppointment(patientId, appointment.id)}
+                      className="p-2 text-purple-600 hover:bg-purple-100 dark:hover:bg-purple-900/20 rounded-lg transition-colors text-xs"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
         )}
       </div>
     );
@@ -717,11 +1050,14 @@ export default function PatientsTab({ user }: PatientsTabProps) {
                   {expandedPatients.has(patient.id) && (
                     <div className="border-t border-gray-200 dark:border-gray-700">
                       {/* Tab Navigation */}
-                      <div className="flex border-b border-gray-200 dark:border-gray-700">
+                      {(() => {
+                        const currentTab = activeTab[patient.id] ?? 'medications';
+                        return (
+                          <div className="flex border-b border-gray-200 dark:border-gray-700">
                         <button
                           onClick={() => setPatientTab(patient.id, 'medications')}
                           className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 text-sm font-medium transition-colors min-h-[44px] ${
-                            activeTab[patient.id] === 'medications'
+                            currentTab === 'medications'
                               ? 'bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 border-b-2 border-green-500'
                               : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700'
                           }`}
@@ -732,7 +1068,7 @@ export default function PatientsTab({ user }: PatientsTabProps) {
                         <button
                           onClick={() => setPatientTab(patient.id, 'reminders')}
                           className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 text-sm font-medium transition-colors min-h-[44px] ${
-                            activeTab[patient.id] === 'reminders'
+                            currentTab === 'reminders'
                               ? 'bg-yellow-50 dark:bg-yellow-900/20 text-yellow-600 dark:text-yellow-400 border-b-2 border-yellow-500'
                               : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700'
                           }`}
@@ -743,7 +1079,7 @@ export default function PatientsTab({ user }: PatientsTabProps) {
                         <button
                           onClick={() => setPatientTab(patient.id, 'appointments')}
                           className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 text-sm font-medium transition-colors min-h-[44px] ${
-                            activeTab[patient.id] === 'appointments'
+                            currentTab === 'appointments'
                               ? 'bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400 border-b-2 border-purple-500'
                               : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700'
                           }`}
@@ -751,13 +1087,22 @@ export default function PatientsTab({ user }: PatientsTabProps) {
                           <Calendar className="w-4 h-4" />
                           Appointments ({patientData[patient.id]?.appointments?.length || 0})
                         </button>
-                      </div>
+                          </div>
+                        );
+                      })()}
 
                       {/* Tab Content */}
                       <div className="p-6">
-                        {activeTab[patient.id] === 'medications' && renderMedications(patient.id)}
-                        {activeTab[patient.id] === 'reminders' && renderReminders(patient.id)}
-                        {activeTab[patient.id] === 'appointments' && renderAppointments(patient.id)}
+                        {(() => {
+                          const currentTab = activeTab[patient.id] ?? 'medications';
+                          return (
+                            <>
+                              {currentTab === 'medications' && renderMedications(patient.id)}
+                              {currentTab === 'reminders' && renderReminders(patient.id)}
+                              {currentTab === 'appointments' && renderAppointments(patient.id)}
+                            </>
+                          );
+                        })()}
                       </div>
                     </div>
                   )}
