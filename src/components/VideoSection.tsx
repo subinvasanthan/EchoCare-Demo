@@ -1,8 +1,7 @@
-import React from 'react';
 import VideoLightboxDrive from './VideoLightboxDrive';
 
 export default function VideoSection() {
-  const videoUrl = 'https://ksonsqkovdefpycfwtxb.supabase.co/storage/v1/object/public/videos/EchoCare%20.mp4';
+  const videoUrl = 'https://ksonsqkovdefpycfwtxb.supabase.co/storage/v1/object/public/videos/EchoCare.mp4';
 
   return (
     <section className="py-16 px-4 sm:px-6 lg:px-8 bg-gradient-to-r from-teal-50 to-blue-50 dark:from-teal-900/20 dark:to-blue-900/20">
