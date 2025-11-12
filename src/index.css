@@ -1,0 +1,242 @@
+@import url('https://fonts.googleapis.com/css2?family=Nunito+Sans:ital,wght@0,300;0,400;0,600;0,700;0,800&family=Nunito:ital,wght@0,400;0,600;0,700&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    font-size: 16px; /* Ensure minimum 16px base font size */
+  }
+  
+  body {
+    font-family: 'Nunito Sans', system-ui, sans-serif;
+    line-height: 1.6;
+  }
+  
+  /* Ensure high contrast for accessibility */
+  .dark {
+    color-scheme: dark;
+  }
+  
+  /* Focus visible styles for accessibility */
+  *:focus-visible {
+    outline: 2px solid #26a69a;
+    outline-offset: 2px;
+  }
+  
+  /* Ensure buttons meet minimum touch target size */
+  button, a, input, select, textarea {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    width: 8px;
+  }
+  
+  ::-webkit-scrollbar-track {
+    background: #f1f5f9;
+  }
+  
+  .dark ::-webkit-scrollbar-track {
+    background: #1e293b;
+  }
+  
+  ::-webkit-scrollbar-thumb {
+    background: #26a69a;
+    border-radius: 4px;
+  }
+  
+  ::-webkit-scrollbar-thumb:hover {
+    background: #1d8a7a;
+  }
+}
+
+@layer components {
+  /* Custom animations */
+  .animate-fade-in {
+    animation: fadeIn 0.6s ease-in-out both;
+  }
+  
+  .animate-slide-up {
+    animation: slideUp 0.6s ease-out both;
+  }
+  
+  /* Animated gradient text for hero headline */
+  .animated-gradient-text {
+    background-image: linear-gradient(90deg, #0ea5e9, #14b8a6, #8b5cf6, #f59e0b);
+    background-size: 200% 200%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: #0f172a;
+    animation: gradientShift 6s ease-in-out infinite;
+  }
+
+  .dark .animated-gradient-text {
+    color: #f8fafc;
+  }
+
+  @media (min-width: 640px) {
+    .animated-gradient-text {
+      color: transparent;
+      -webkit-text-fill-color: transparent;
+    }
+  }
+  
+  /* New subtle motion for hero visuals */
+  .animate-float {
+    animation: floatY 6s ease-in-out infinite;
+  }
+  .animate-float-slow {
+    animation: floatY 10s ease-in-out infinite;
+  }
+  .animate-float-reverse {
+    animation: floatYReverse 8s ease-in-out infinite;
+  }
+  .animate-pulse-glow {
+    animation: pulseGlow 3s ease-in-out infinite;
+  }
+  .animate-heartbeat {
+    animation: heartbeat 1.2s ease-in-out infinite;
+    transform-origin: center;
+  }
+  .animate-heartbeat-slow {
+    animation: heartbeat 1.6s ease-in-out infinite;
+    transform-origin: center;
+  }
+  
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+  
+  @keyframes slideUp {
+    from {
+      opacity: 0;
+      transform: translateY(30px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  @keyframes gradientShift {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+  }
+
+  @keyframes floatY {
+    0%, 100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-10px);
+    }
+  }
+
+  @keyframes floatYReverse {
+    0%, 100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(10px);
+    }
+  }
+
+  @keyframes pulseGlow {
+    0%, 100% {
+      box-shadow: 0 0 0 0 rgba(45, 212, 191, 0.25);
+    }
+    50% {
+      box-shadow: 0 0 40px 8px rgba(45, 212, 191, 0.35);
+    }
+  }
+
+  @keyframes heartbeat {
+    0% {
+      transform: scale(1);
+    }
+    25% {
+      transform: scale(1.12);
+    }
+    40% {
+      transform: scale(1);
+    }
+    60% {
+      transform: scale(1.09);
+    }
+    100% {
+      transform: scale(1);
+    }
+  }
+
+  /* Horizontal carousel scroll (marquee-like) */
+  @keyframes carousel-scroll {
+    0% {
+      transform: translateX(0);
+    }
+    100% {
+      transform: translateX(-50%);
+    }
+  }
+
+  /* Carousel scroll for 9 images - translate by exact width of 9 images */
+  @keyframes carousel-scroll-9 {
+    0% {
+      transform: translateX(0);
+    }
+    100% {
+      transform: translateX(-2736px);
+    }
+  }
+
+  /* Rising badges from bottom to top with fade in/out */
+  @keyframes riseLoop {
+    0% {
+      transform: translateY(120%);
+      opacity: 0;
+    }
+    10% {
+      opacity: 1;
+    }
+    90% {
+      opacity: 1;
+    }
+    100% {
+      transform: translateY(-220%);
+      opacity: 0;
+    }
+  }
+
+  .animate-rise-loop {
+    animation: riseLoop 12s linear infinite;
+  }
+  .animate-rise-loop-slow {
+    animation: riseLoop 16s linear infinite;
+  }
+  .animate-rise-loop-fast {
+    animation: riseLoop 10s linear infinite;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-fade-in,
+  .animate-slide-up {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@layer utilities {
+  .text-fill-transparent {
+    -webkit-text-fill-color: transparent;
+  }
+}
