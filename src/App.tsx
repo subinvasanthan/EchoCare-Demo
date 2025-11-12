@@ -88,7 +88,11 @@ function App() {
     return <div className="min-h-screen bg-white dark:bg-gray-900 transition-colors duration-300"><AuthCallback /></div>;
   }
   if (currentView === 'dashboard') {
-    return <div className="min-h-screen bg-white dark:bg-gray-900 transition-colors duration-300"><Dashboard /></div>;
+    return (
+      <div className="min-h-screen bg-white dark:bg-gray-900 transition-colors duration-300">
+        <Dashboard darkMode={darkMode} toggleDarkMode={toggleDarkMode} />
+      </div>
+    );
   }
 
   // Simple inline Sign In/Up pages (if you already have components for these, you can render them here instead)

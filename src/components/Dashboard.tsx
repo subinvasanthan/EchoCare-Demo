@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
-import { LogOut, Users, Pill, Bell, Calendar, ArrowLeft, FileText } from 'lucide-react';
+import { LogOut, Users, Pill, Bell, Calendar, ArrowLeft, FileText, Sun, Moon } from 'lucide-react';
 import PatientsTab from './dashboard/PatientsTab';
 import MedicationTab from './dashboard/MedicationTab';
 import RemindersTab from './dashboard/RemindersTab';
@@ -9,7 +9,12 @@ import MedicalReportsTab from './dashboard/MedicalReportsTab';
 
 type Tab = 'patients' | 'medication' | 'reminders' | 'appointments' | 'medical-reports';
 
-export default function Dashboard() {
+interface DashboardProps {
+  darkMode: boolean;
+  toggleDarkMode: () => void;
+}
+
+export default function Dashboard({ darkMode, toggleDarkMode }: DashboardProps) {
   const [user, setUser] = useState<any>(null);
   const [activeTab, setActiveTab] = useState<Tab>('patients');
   const [loading, setLoading] = useState(true);
@@ -92,6 +97,25 @@ export default function Dashboard() {
             >
               <ArrowLeft className="w-4 h-4" />
               Back to Home
+            </button>
+            {/* Theme Toggle */}
+            <button
+              onClick={toggleDarkMode}
+              className="inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors min-h-[44px]"
+              aria-label={darkMode ? 'Switch to light mode' : 'Switch to dark mode'}
+              title={darkMode ? 'Switch to light mode' : 'Switch to dark mode'}
+            >
+              {darkMode ? (
+                <>
+                  <Sun className="w-4 h-4 text-amber-400" />
+                  Light
+                </>
+              ) : (
+                <>
+                  <Moon className="w-4 h-4 text-blue-500" />
+                  Dark
+                </>
+              )}
             </button>
             {/* Logout */}
             <button
