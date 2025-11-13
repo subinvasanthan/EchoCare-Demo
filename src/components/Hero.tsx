@@ -26,22 +26,22 @@ export default function Hero() {
             <h1 className="text-4xl sm:text-5xl lg:text-6xl leading-tight mb-4 space-y-2">
               <span className="block sm:hidden">
                 <span className="font-extrabold text-4xl leading-tight bg-clip-text text-transparent text-fill-transparent bg-gradient-to-r from-teal-500 via-sky-500 to-violet-500 drop-shadow-md">
-                  We Remind. They Stay Healthy. You Stay At Ease.
+                  Empowering Caregivers. Supporting Loved Ones.
                 </span>
               </span>
               <span className="hidden sm:block font-extrabold animated-gradient-text text-fill-transparent drop-shadow-sm">
-                We Remind. They Stay Healthy. You Stay At Ease.
+                Empowering Caregivers. Supporting Loved Ones.
               </span>
-              <span className="block text-lg font-semibold text-slate-700 dark:text-slate-200 sm:hidden">
+              {/*<span className="block text-lg font-semibold text-slate-700 dark:text-slate-200 sm:hidden">
                 Thoughtfully designed for seniors and their caregivers.
               </span>
               <span className="hidden sm:block text-lg sm:text-xl font-semibold bg-clip-text text-transparent text-fill-transparent bg-gradient-to-r from-teal-600 via-blue-600 to-purple-600 dark:from-teal-400 dark:via-blue-400 dark:to-purple-400">
                 Thoughtfully designed for seniors and their caregivers.
-              </span>
+              </span>*/}
             </h1>
 
             <p className="text-xl sm:text-2xl text-gray-600 dark:text-gray-300 mb-8 leading-relaxed">
-              EchoCare simplifies elder care with AI-powered reminders and health insights—so support feels connected, safe, and effortless.
+              EchoCare helps caregivers coordinate medical routines, track wellness updates, and access AI-powered assistance — all through one secure and compassionate platform.
             </p>
 
             <div className="flex flex-col items-center lg:items-start">

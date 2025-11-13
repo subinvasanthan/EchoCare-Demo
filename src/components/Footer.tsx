@@ -96,8 +96,17 @@ export default function Footer() {
         </div> {/* ← close the grid wrapper */}
 
         {/* Bottom Bar */}
-        <div className="border-t border-gray-800 pt-8 text-center">
+        <div className="border-t border-gray-800 pt-8 text-center space-y-3">
           <p className="text-lg text-gray-400">© 2025 EchoCare. Made with ❤️ for families everywhere.</p>
+          <button
+            onClick={() => {
+              window.history.pushState({}, '', '/signup');
+              window.dispatchEvent(new PopStateEvent('popstate'));
+            }}
+            className="text-sm text-gray-500 hover:text-gray-300 transition-colors focus:outline-none focus:underline"
+          >
+            Sign-up
+          </button>
         </div>
       </div>
     </footer>

@@ -4,23 +4,23 @@ import { Clock, Smartphone, Stethoscope, Mic } from 'lucide-react';
 const benefits = [
   {
     icon: Clock,
-    title: 'Smart IVR Reminders',
-    description: 'Automated calls with simple keypad responses'
+    title: 'Smart Reminders',
+    description: 'Get automated reminders for calls, WhatsApp, or SMS—fully customizable to your preference'
   },
   {
     icon: Smartphone,
-    title: 'Real-time WhatsApp Alerts',
-    description: 'Instant updates to caregivers on all activities'
+    title: 'Intelligent Dashboard',
+    description: 'View all your appointments, reminders, and medication plans in one easy-to-use dashboard'
   },
   {
     icon: Stethoscope,
-    title: 'One-Tap Doctor Call Scheduling',
-    description: 'Direct connection to healthcare professionals'
+    title: 'Medical Report Chat',
+    description: 'Instantly chat and get insights from your medical reports'
   },
   {
     icon: Mic,
-    title: 'Voice-Powered Simplicity',
-    description: 'Easy voice interactions designed for elderly users'
+    title: 'Voice-Powered Assistance',
+    description: 'Enjoy effortless voice interactions, specially designed for elderly users'
   }
 ];
 

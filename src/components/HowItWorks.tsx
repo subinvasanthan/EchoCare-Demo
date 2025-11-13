@@ -4,26 +4,26 @@ import { Phone, CheckCircle, MessageSquare, Heart } from 'lucide-react';
 const steps = [
   {
     icon: Phone,
-    title: 'Speak',
-    description: 'Elderly person receives a friendly EchoCare call',
+    title: 'Remind',
+    description: 'Automatic calls and messages',
     color: 'bg-blue-100 dark:bg-blue-900/50 text-blue-600'
   },
   {
     icon: CheckCircle,
-    title: 'Confirm',
-    description: 'Respond using simple keypad input',
+    title: 'Respond',
+    description: 'Simple confirmation from the elder',
     color: 'bg-green-100 dark:bg-green-900/50 text-green-600'
   },
   {
     icon: MessageSquare,
-    title: 'Alert',
-    description: 'Caregiver receives real-time WhatsApp update',
+    title: 'Notify',
+    description: 'Instant alert if no reply',
     color: 'bg-yellow-100 dark:bg-yellow-900/50 text-yellow-600'
   },
   {
     icon: Heart,
-    title: 'Relax',
-    description: 'Everyone stays informed and reassured',
+    title: 'Reassure',
+    description: 'Everything tracked and logged',
     color: 'bg-pink-100 dark:bg-pink-900/50 text-pink-600'
   }
 ];
