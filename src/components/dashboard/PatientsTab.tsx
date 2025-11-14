@@ -58,6 +58,9 @@ interface Appointment {
   appointment_at: string | null;
   status: string | null;
   notes: string | null;
+  notify_sms?: boolean;
+  notify_whatsapp?: boolean;
+  notify_call?: boolean;
   created_at: string;
 }
 
@@ -710,6 +713,18 @@ export default function PatientsTab({ user }: PatientsTabProps) {
     const nowMs = Date.now();
     const oneWeekMs = 7 * 24 * 60 * 60 * 1000;
 
+    // Helper function to format notification channels
+    const formatNotificationChannels = (channelString: string) => {
+      if (!channelString) return 'None';
+      const channels = channelString.split(',').map(ch => ch.trim());
+      return channels.map(ch => {
+        // Handle special cases for proper formatting
+        if (ch === 'whatsapp') return 'WhatsApp';
+        if (ch === 'sms') return 'SMS';
+        return ch.charAt(0).toUpperCase() + ch.slice(1);
+      }).join(', ');
+    };
+
     const sortedReminders = [...reminders].sort((a, b) => {
       const aTime = a.start_datetime ? new Date(a.start_datetime).getTime() : Number.MAX_SAFE_INTEGER;
       const bTime = b.start_datetime ? new Date(b.start_datetime).getTime() : Number.MAX_SAFE_INTEGER;
@@ -763,7 +778,7 @@ export default function PatientsTab({ user }: PatientsTabProps) {
                         <p>
                           Frequency: {reminder.frequency_value} {reminder.frequency_unit}
                         </p>
-                        <p>Notifications: {reminder.notify_channel}</p>
+                        <p>Notifications: {formatNotificationChannels(reminder.notify_channel)}</p>
                         <p>
                           <span className={isWithinWeek ? 'text-red-600 dark:text-red-400 font-semibold' : 'text-gray-700 dark:text-gray-300'}>
                             Starts: {formatDateTime(reminder.start_datetime)}
@@ -813,7 +828,7 @@ export default function PatientsTab({ user }: PatientsTabProps) {
                       <p>
                         Frequency: {reminder.frequency_value} {reminder.frequency_unit}
                       </p>
-                      <p>Notifications: {reminder.notify_channel}</p>
+                      <p>Notifications: {formatNotificationChannels(reminder.notify_channel)}</p>
                       <p>Starts: {formatDateTime(reminder.start_datetime)}</p>
                       <p>Ends: {formatDateTime(reminder.end_datetime)}</p>
                       {typeof reminder.repeat_count === 'number' && reminder.repeat_count > 0 && (
@@ -843,6 +858,21 @@ export default function PatientsTab({ user }: PatientsTabProps) {
     const appointments = patientData[patientId]?.appointments || [];
     const today = new Date();
     today.setHours(0, 0, 0, 0);
+
+    // Helper function to format notification channels from boolean fields
+    const formatAppointmentNotifications = (appointment: Appointment) => {
+      const channels: string[] = [];
+      if (appointment.notify_sms) {
+        channels.push('SMS');
+      }
+      if (appointment.notify_whatsapp) {
+        channels.push('WhatsApp');
+      }
+      if (appointment.notify_call) {
+        channels.push('Call');
+      }
+      return channels.length > 0 ? channels.join(', ') : 'None';
+    };
 
     const validAppointments = appointments.filter((appointment) => appointment.appointment_at);
     const now = new Date();
@@ -914,6 +944,9 @@ export default function PatientsTab({ user }: PatientsTabProps) {
                     {appointment.phone && (
                       <p className="text-xs text-gray-800/80 dark:text-gray-200/80">Contact: {appointment.phone}</p>
                     )}
+                    <p className="text-xs text-gray-800/80 dark:text-gray-200/80 mt-1">
+                      Notifications: {formatAppointmentNotifications(appointment)}
+                    </p>
                     {appointment.notes && (
                       <p className="text-xs italic text-gray-800/80 dark:text-gray-200/80 mt-1">Notes: {appointment.notes}</p>
                     )}
@@ -951,6 +984,9 @@ export default function PatientsTab({ user }: PatientsTabProps) {
                     <p className="text-sm">{appointment.specialization}</p>
                     <p className="text-xs mt-1">
                       {formatDateTime(appointment.appointment_at)}
+                    </p>
+                    <p className="text-xs text-gray-600 dark:text-gray-300 mt-1">
+                      Notifications: {formatAppointmentNotifications(appointment)}
                     </p>
                     {appointment.notes && (
                       <p className="text-xs italic mt-1">Notes: {appointment.notes}</p>

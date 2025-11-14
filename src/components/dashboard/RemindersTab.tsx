@@ -23,7 +23,7 @@ export default function RemindersTab({ user }: RemindersTabProps) {
     start_datetime: '',
     end_datetime: '',
     repeat_count: 0,
-    notify_channel: 'call',
+    notify_channel: 'sms',
     remind_2days: false,
     remind_1hour: false,
     notify_sms: false,
@@ -75,6 +75,17 @@ function handleSubmit(e: React.FormEvent) {
     return;
   }
 
+  // Determine notify_channel based on selected checkboxes
+  // If both are selected, store as comma-separated string
+  const channels: string[] = [];
+  if (form.notify_sms) {
+    channels.push('sms');
+  }
+  if (form.notify_whatsapp) {
+    channels.push('whatsapp');
+  }
+  const notifyChannel = channels.length > 0 ? channels.join(',') : 'sms'; // default to sms if none selected
+
   setSubmitting(true);
   setMessage(null);
 
@@ -90,7 +101,7 @@ function handleSubmit(e: React.FormEvent) {
         start_datetime: form.start_datetime || null,
         end_datetime: form.end_datetime || null,
         repeat_count: form.repeat_count,
-        notify_channel: form.notify_channel,
+        notify_channel: notifyChannel,
         notify_sms: form.notify_sms,
         notify_call: form.notify_call,
         notify_whatsapp: form.notify_whatsapp,
@@ -115,7 +126,7 @@ function handleSubmit(e: React.FormEvent) {
           start_datetime: form.start_datetime,
           end_datetime: form.end_datetime,
           repeat_count: form.repeat_count,
-          notify_channel: form.notify_channel,
+          notify_channel: notifyChannel,
           notify_sms: form.notify_sms,
           notify_call: form.notify_call,
           notify_whatsapp: form.notify_whatsapp,
@@ -138,7 +149,7 @@ function handleSubmit(e: React.FormEvent) {
           start_datetime: '',
           end_datetime: '',
           repeat_count: 0,
-          notify_channel: 'call',
+          notify_channel: 'sms',
           remind_2days: false,
           remind_1hour: false,
           notify_sms: false,
