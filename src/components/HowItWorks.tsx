@@ -44,11 +44,6 @@ export default function HowItWorks() {
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
           {steps.map((step, index) => (
             <div key={index} className="relative">
-              {/* Connection line */}
-              {index < steps.length - 1 && (
-                <div className="hidden lg:block absolute top-12 left-full w-full h-0.5 bg-gray-200 dark:bg-gray-700 z-0"></div>
-              )}
-              
               <div className="relative z-10 text-center">
                 <div className={`w-24 h-24 ${step.color} rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-lg`}>
                   <step.icon className="w-12 h-12" />
