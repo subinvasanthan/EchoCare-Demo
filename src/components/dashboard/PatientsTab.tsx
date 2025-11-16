@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
 import { WebhookService } from '../../lib/webhook';
-import { Plus, Check, AlertCircle, Search, Edit, Trash2, X, ChevronDown, ChevronUp, Calendar, Pill, Bell, Clock, User, Phone, MapPin } from 'lucide-react';
+import { Plus, Check, AlertCircle, Search, Edit, Trash2, X, Calendar, Pill, Bell, Clock, User, Phone, MapPin, ChevronDown, ChevronUp } from 'lucide-react';
+import { formatInZone } from '../../lib/time';
 
 interface PatientsTabProps {
   user: any;
@@ -16,6 +17,7 @@ interface CareRecipient {
   gender: string | null;
   address: string | null;
   notes: string | null;
+  timezone?: string | null;
   created_at: string;
 }
 
@@ -82,6 +84,11 @@ export default function PatientsTab({ user }: PatientsTabProps) {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState<string | null>(null);
   
   const [phoneNumberError, setPhoneNumberError] = useState('');
+  // Deleting flags to provide immediate UI feedback and prevent repeated clicks
+  const [deletingPatientId, setDeletingPatientId] = useState<string | null>(null);
+  const [deletingMedicationId, setDeletingMedicationId] = useState<string | null>(null);
+  const [deletingReminderId, setDeletingReminderId] = useState<string | null>(null);
+  const [deletingAppointmentId, setDeletingAppointmentId] = useState<string | null>(null);
   
   const [form, setForm] = useState({
     full_name: '',
@@ -90,7 +97,8 @@ export default function PatientsTab({ user }: PatientsTabProps) {
     date_of_birth: '',
     gender: '',
     address: '',
-    notes: ''
+    notes: '',
+    timezone: ''
   });
   const [submitting, setSubmitting] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
@@ -299,6 +307,7 @@ export default function PatientsTab({ user }: PatientsTabProps) {
           ...form,
           full_name: trimmedName,
           primary_contact: trimmedContact || null,
+          timezone: form.timezone || null,
           owner_id: user.id
         })
         .select()
@@ -313,6 +322,7 @@ export default function PatientsTab({ user }: PatientsTabProps) {
         ...form,
         full_name: trimmedName,
         primary_contact: trimmedContact || null,
+        timezone: form.timezone || null,
         owner_id: user.id
       }, user.id);
       
@@ -323,7 +333,8 @@ export default function PatientsTab({ user }: PatientsTabProps) {
         date_of_birth: '',
         gender: '',
         address: '',
-        notes: ''
+        notes: '',
+        timezone: ''
       });
       
       // Add new patient to the list immediately
@@ -356,7 +367,8 @@ export default function PatientsTab({ user }: PatientsTabProps) {
       date_of_birth: patient.date_of_birth || '',
       gender: patient.gender || '',
       address: patient.address || '',
-      notes: patient.notes || ''
+      notes: patient.notes || '',
+      timezone: patient.timezone || ''
     });
   };
 
@@ -385,6 +397,7 @@ export default function PatientsTab({ user }: PatientsTabProps) {
           ...form,
           full_name: trimmedName,
           primary_contact: trimmedContact || null,
+          timezone: form.timezone || null,
         })
         .eq('id', editingPatient.id);
 
@@ -398,6 +411,7 @@ export default function PatientsTab({ user }: PatientsTabProps) {
         ...form,
         full_name: trimmedName,
         primary_contact: trimmedContact || null,
+        timezone: form.timezone || null,
       }, user.id);
       
       setEditingPatient(null);
@@ -408,7 +422,8 @@ export default function PatientsTab({ user }: PatientsTabProps) {
         date_of_birth: '',
         gender: '',
         address: '',
-        notes: ''
+        notes: '',
+        timezone: ''
       });
       
       // Update patient in the list immediately
@@ -426,6 +441,7 @@ export default function PatientsTab({ user }: PatientsTabProps) {
 
   const handleDelete = async (patientId: string) => {
     try {
+      setDeletingPatientId(patientId);
       const { error } = await supabase
         .from('care_recipients')
         .delete()
@@ -454,6 +470,8 @@ export default function PatientsTab({ user }: PatientsTabProps) {
       });
     } catch (error: any) {
       setMessage({ type: 'error', text: error.message || 'Failed to delete patient' });
+    } finally {
+      setDeletingPatientId(null);
     }
   };
 
@@ -467,7 +485,8 @@ export default function PatientsTab({ user }: PatientsTabProps) {
       date_of_birth: '',
       gender: '',
       address: '',
-      notes: ''
+      notes: '',
+      timezone: ''
     });
   };
 
@@ -476,6 +495,7 @@ export default function PatientsTab({ user }: PatientsTabProps) {
     if (!confirmDelete) return;
 
     try {
+      setDeletingMedicationId(medicationId);
       const { error } = await supabase
         .from('medication_plans')
         .delete()
@@ -502,6 +522,8 @@ export default function PatientsTab({ user }: PatientsTabProps) {
     } catch (error: any) {
       console.error('Error deleting medication:', error);
       setMessage({ type: 'error', text: error.message || 'Failed to delete medication plan' });
+    } finally {
+      setDeletingMedicationId(null);
     }
   };
 
@@ -510,6 +532,7 @@ export default function PatientsTab({ user }: PatientsTabProps) {
     if (!confirmDelete) return;
 
     try {
+      setDeletingReminderId(reminderId);
       const { error } = await supabase
         .from('general_reminders')
         .delete()
@@ -536,6 +559,8 @@ export default function PatientsTab({ user }: PatientsTabProps) {
     } catch (error: any) {
       console.error('Error deleting reminder:', error);
       setMessage({ type: 'error', text: error.message || 'Failed to delete reminder' });
+    } finally {
+      setDeletingReminderId(null);
     }
   };
 
@@ -544,6 +569,7 @@ export default function PatientsTab({ user }: PatientsTabProps) {
     if (!confirmDelete) return;
 
     try {
+      setDeletingAppointmentId(appointmentId);
       const { error } = await supabase
         .from('appointments')
         .delete()
@@ -570,16 +596,20 @@ export default function PatientsTab({ user }: PatientsTabProps) {
     } catch (error: any) {
       console.error('Error deleting appointment:', error);
       setMessage({ type: 'error', text: error.message || 'Failed to delete appointment' });
+    } finally {
+      setDeletingAppointmentId(null);
     }
   };
 
-  const formatDate = (dateString: string | null) => {
+  const formatDateInTZ = (dateString: string | null, tz?: string | null) => {
     if (!dateString) return 'Not set';
+    if (tz) return formatInZone(dateString, tz, 'dd MMM yyyy');
     return new Date(dateString).toLocaleDateString();
   };
 
-  const formatDateTime = (dateString: string | null) => {
+  const formatDateTimeInTZ = (dateString: string | null, tz?: string | null) => {
     if (!dateString) return 'Not set';
+    if (tz) return formatInZone(dateString, tz, 'dd MMM yyyy, hh:mm a');
     return new Date(dateString).toLocaleString();
   };
 
@@ -596,7 +626,7 @@ export default function PatientsTab({ user }: PatientsTabProps) {
     return [];
   };
 
-  const renderMedications = (patientId: string) => {
+  const renderMedications = (patientId: string, tz?: string | null) => {
     const medications = patientData[patientId]?.medications || [];
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -628,8 +658,8 @@ export default function PatientsTab({ user }: PatientsTabProps) {
       const doseTimes = normalizeDoseTimes(med.dose_times);
       const containerStyles =
         variant === 'active'
-          ? 'bg-purple-50 dark:bg-purple-900/10 border border-purple-200 dark:border-purple-800'
-          : 'bg-gray-50/80 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700';
+          ? 'bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all'
+          : 'bg-white/90 dark:bg-gray-900/80 border border-gray-200 dark:border-gray-700 opacity-95 shadow-sm';
 
       const startTime = med.start_date ? new Date(med.start_date).getTime() : null;
       const isStartingSoon =
@@ -638,20 +668,20 @@ export default function PatientsTab({ user }: PatientsTabProps) {
         startTime - nowMs <= oneWeekMs;
 
       return (
-        <div key={med.id} className={`${containerStyles} rounded-lg p-4`}>
+        <div key={med.id} className={`${containerStyles} rounded-xl p-4`}>
           <div className="flex items-start justify-between">
             <div className="flex-1">
-              <h4 className="font-semibold text-green-800 dark:text-green-200">{med.medicine_name}</h4>
-              <p className="text-sm text-green-600 dark:text-green-300">
+              <h4 className="font-semibold text-gray-900 dark:text-gray-100">{med.medicine_name}</h4>
+              <p className="text-sm text-gray-700 dark:text-gray-300">
                 {med.dosage} • {med.form} • {med.frequency_value} {med.frequency_unit}
               </p>
               <p className="text-xs mt-1">
                 <span className={isStartingSoon ? 'text-red-600 dark:text-red-400 font-semibold' : 'text-gray-600 dark:text-gray-300'}>
-                  Starts: {formatDate(med.start_date)}
+                  Starts: {formatDateInTZ(med.start_date, tz)}
                 </span>
                 <span className="mx-2 text-gray-400 dark:text-gray-500">•</span>
                 <span className="text-gray-600 dark:text-gray-300">
-                  Ends: {formatDate(med.end_date)}
+                  Ends: {formatDateInTZ(med.end_date, tz)}
                 </span>
               </p>
               <div className="text-xs text-gray-600 dark:text-gray-300 mt-2 space-y-1">
@@ -664,12 +694,17 @@ export default function PatientsTab({ user }: PatientsTabProps) {
               </div>
             </div>
             <div className="flex flex-col items-end gap-2">
-              <Pill className="w-5 h-5 text-green-600 dark:text-green-400" />
+              <Pill className="w-5 h-5 text-blue-500 dark:text-blue-400" />
               <button
                 onClick={() => handleDeleteMedication(patientId, med.id)}
-                className="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors text-xs"
+                disabled={deletingMedicationId === med.id}
+                className="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors text-xs disabled:opacity-60 disabled:cursor-not-allowed"
               >
-                <Trash2 className="w-4 h-4" />
+                {deletingMedicationId === med.id ? (
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-red-600" />
+                ) : (
+                  <Trash2 className="w-4 h-4" />
+                )}
               </button>
             </div>
           </div>
@@ -706,7 +741,7 @@ export default function PatientsTab({ user }: PatientsTabProps) {
     );
   };
 
-  const renderReminders = (patientId: string) => {
+  const renderReminders = (patientId: string, tz?: string | null) => {
     const reminders = patientData[patientId]?.reminders || [];
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -766,7 +801,7 @@ export default function PatientsTab({ user }: PatientsTabProps) {
               return (
                 <div
                   key={reminder.id}
-                  className="rounded-lg p-4 border border-purple-200 dark:border-purple-800 shadow-sm bg-purple-50 dark:bg-purple-900/10"
+                  className="rounded-xl p-4 border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all bg-white dark:bg-gray-900"
                 >
                   <div className="flex items-start justify-between">
                     <div className="flex-1 text-gray-900 dark:text-gray-100">
@@ -781,11 +816,11 @@ export default function PatientsTab({ user }: PatientsTabProps) {
                         <p>Notifications: {formatNotificationChannels(reminder.notify_channel)}</p>
                         <p>
                           <span className={isWithinWeek ? 'text-red-600 dark:text-red-400 font-semibold' : 'text-gray-700 dark:text-gray-300'}>
-                            Starts: {formatDateTime(reminder.start_datetime)}
+                            Starts: {formatDateTimeInTZ(reminder.start_datetime, tz)}
                           </span>
                         </p>
                         <p>
-                          Ends: {formatDateTime(reminder.end_datetime)}
+                          Ends: {formatDateTimeInTZ(reminder.end_datetime, tz)}
                         </p>
                         {typeof reminder.repeat_count === 'number' && reminder.repeat_count > 0 && (
                           <p>Repeat count: {reminder.repeat_count}</p>
@@ -793,12 +828,17 @@ export default function PatientsTab({ user }: PatientsTabProps) {
                       </div>
                     </div>
                     <div className="flex flex-col items-end gap-2">
-                      <Bell className={`w-5 h-5 opacity-80 ${isWithinWeek ? 'text-red-500 dark:text-red-400' : 'text-purple-600 dark:text-purple-400'}`} />
+                      <Bell className={`w-5 h-5 opacity-80 ${isWithinWeek ? 'text-red-500 dark:text-red-400' : 'text-blue-500 dark:text-blue-400'}`} />
                       <button
                         onClick={() => handleDeleteReminder(patientId, reminder.id)}
-                        className="p-2 text-gray-900 dark:text-gray-100 hover:bg-black/10 dark:hover:bg-white/20 rounded-lg transition-colors text-xs"
+                        disabled={deletingReminderId === reminder.id}
+                        className="p-2 text-gray-900 dark:text-gray-100 hover:bg-black/10 dark:hover:bg-white/20 rounded-lg transition-colors text-xs disabled:opacity-60 disabled:cursor-not-allowed"
                       >
-                        <Trash2 className="w-4 h-4" />
+                        {deletingReminderId === reminder.id ? (
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-900 dark:border-gray-100" />
+                        ) : (
+                          <Trash2 className="w-4 h-4" />
+                        )}
                       </button>
                     </div>
                   </div>
@@ -816,7 +856,7 @@ export default function PatientsTab({ user }: PatientsTabProps) {
             {pastReminders.map((reminder) => (
               <div
                 key={reminder.id}
-                className="rounded-lg p-4 border border-gray-200 dark:border-gray-700 shadow-sm bg-gray-50/80 dark:bg-gray-900/50"
+                className="rounded-xl p-4 border border-gray-200 dark:border-gray-700 shadow-sm bg-white/90 dark:bg-gray-900/80"
               >
                 <div className="flex items-start justify-between">
                   <div className="flex-1 text-gray-900 dark:text-gray-100">
@@ -829,8 +869,8 @@ export default function PatientsTab({ user }: PatientsTabProps) {
                         Frequency: {reminder.frequency_value} {reminder.frequency_unit}
                       </p>
                       <p>Notifications: {formatNotificationChannels(reminder.notify_channel)}</p>
-                      <p>Starts: {formatDateTime(reminder.start_datetime)}</p>
-                      <p>Ends: {formatDateTime(reminder.end_datetime)}</p>
+                      <p>Starts: {formatDateTimeInTZ(reminder.start_datetime, tz)}</p>
+                      <p>Ends: {formatDateTimeInTZ(reminder.end_datetime, tz)}</p>
                       {typeof reminder.repeat_count === 'number' && reminder.repeat_count > 0 && (
                         <p>Repeat count: {reminder.repeat_count}</p>
                       )}
@@ -854,7 +894,7 @@ export default function PatientsTab({ user }: PatientsTabProps) {
     );
   };
 
-  const renderAppointments = (patientId: string) => {
+  const renderAppointments = (patientId: string, tz?: string | null) => {
     const appointments = patientData[patientId]?.appointments || [];
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -918,7 +958,7 @@ export default function PatientsTab({ user }: PatientsTabProps) {
               return (
               <div
                 key={appointment.id}
-                className="rounded-lg p-4 border border-purple-200 dark:border-purple-800 shadow-sm bg-purple-50 dark:bg-purple-900/10"
+                className="rounded-xl p-4 border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all bg-white dark:bg-gray-900"
               >
                 <div className="flex items-start justify-between">
                   <div className="flex-1 text-gray-900 dark:text-gray-100">
@@ -932,7 +972,7 @@ export default function PatientsTab({ user }: PatientsTabProps) {
                             : 'text-gray-800/80 dark:text-gray-200/80 font-normal'
                         }
                       >
-                        {formatDateTime(appointment.appointment_at)}
+                        {formatDateTimeInTZ(appointment.appointment_at, tz)}
                       </span>
                     </p>
                     {appointment.hospital && (
@@ -953,13 +993,18 @@ export default function PatientsTab({ user }: PatientsTabProps) {
                   </div>
                   <div className="flex flex-col items-end gap-2">
                     <Calendar
-                      className={`w-5 h-5 opacity-80 ${isWithinWeek ? 'text-red-500 dark:text-red-400' : 'text-purple-600 dark:text-purple-400'}`}
+                      className={`w-5 h-5 opacity-80 ${isWithinWeek ? 'text-red-500 dark:text-red-400' : 'text-blue-500 dark:text-blue-400'}`}
                     />
                     <button
                       onClick={() => handleDeleteAppointment(patientId, appointment.id)}
-                      className="p-2 text-gray-900 dark:text-gray-100 hover:bg-black/10 dark:hover:bg-white/20 rounded-lg transition-colors text-xs"
+                      disabled={deletingAppointmentId === appointment.id}
+                      className="p-2 text-gray-900 dark:text-gray-100 hover:bg-black/10 dark:hover:bg-white/20 rounded-lg transition-colors text-xs disabled:opacity-60 disabled:cursor-not-allowed"
                     >
-                      <Trash2 className="w-4 h-4" />
+                      {deletingAppointmentId === appointment.id ? (
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-900 dark:border-gray-100" />
+                      ) : (
+                        <Trash2 className="w-4 h-4" />
+                      )}
                     </button>
                   </div>
                 </div>
@@ -976,14 +1021,14 @@ export default function PatientsTab({ user }: PatientsTabProps) {
             {pastAppointments.map((appointment) => (
               <div
                 key={appointment.id}
-                className="rounded-lg p-4 border border-gray-200 dark:border-gray-700 shadow-sm bg-gray-50/80 dark:bg-gray-900/50"
+                className="rounded-xl p-4 border border-gray-200 dark:border-gray-700 shadow-sm bg-white/90 dark:bg-gray-900/80"
               >
                 <div className="flex items-start justify-between">
                   <div className="flex-1 text-gray-900 dark:text-gray-100">
                     <h4 className="font-semibold">Dr. {appointment.doctor_name}</h4>
                     <p className="text-sm">{appointment.specialization}</p>
                     <p className="text-xs mt-1">
-                      {formatDateTime(appointment.appointment_at)}
+                      {formatDateTimeInTZ(appointment.appointment_at, tz)}
                     </p>
                     <p className="text-xs text-gray-600 dark:text-gray-300 mt-1">
                       Notifications: {formatAppointmentNotifications(appointment)}
@@ -1068,7 +1113,7 @@ export default function PatientsTab({ user }: PatientsTabProps) {
           ) : (
             <div className="space-y-4">
               {filteredPatients.map((patient) => (
-                <div key={patient.id} className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+                <div key={patient.id} className="bg-blue-50/70 dark:bg-gray-800/40 rounded-xl shadow-sm border border-blue-200 dark:border-gray-700">
                   {/* Patient Header */}
                   <div className="p-6">
                     <div className="flex justify-between items-start mb-4">
@@ -1086,7 +1131,7 @@ export default function PatientsTab({ user }: PatientsTabProps) {
                           {patient.date_of_birth && (
                             <div className="flex items-center gap-2">
                               <Clock className="w-4 h-4" />
-                              <span>DOB: {formatDate(patient.date_of_birth)}</span>
+                              <span>DOB: {formatDateInTZ(patient.date_of_birth, patient.timezone)}</span>
                             </div>
                           )}
                           {patient.address && (
@@ -1099,6 +1144,12 @@ export default function PatientsTab({ user }: PatientsTabProps) {
                             <div className="flex items-center gap-2">
                               <User className="w-4 h-4" />
                               <span>{patient.gender}</span>
+                            </div>
+                          )}
+                          {patient.timezone && (
+                            <div className="flex items-center gap-2">
+                              <Clock className="w-4 h-4" />
+                              <span className="text-xs">TZ: {patient.timezone}</span>
                             </div>
                           )}
                         </div>
@@ -1118,62 +1169,79 @@ export default function PatientsTab({ user }: PatientsTabProps) {
                         >
                           <Trash2 className="w-4 h-4" />
                         </button>
-                        <button
-                          onClick={() => togglePatientExpansion(patient.id)}
-                          className="p-2 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition-colors"
-                          title={expandedPatients.has(patient.id) ? "Collapse details" : "Expand details"}
-                        >
-                          {expandedPatients.has(patient.id) ? (
-                            <ChevronUp className="w-4 h-4" />
-                          ) : (
-                            <ChevronDown className="w-4 h-4" />
-                          )}
-                        </button>
                       </div>
                     </div>
+                  </div>
+
+                  {/* Expand/Collapse control below header - light tone, pull-down feel */}
+                  <div className="px-6 pb-4 -mt-2">
+                    <button
+                      onClick={() => togglePatientExpansion(patient.id)}
+                      className={`w-full py-2.5 text-sm font-medium rounded-b-xl rounded-t-md transition-colors flex items-center justify-center gap-2 border
+                        ${expandedPatients.has(patient.id)
+                          ? 'text-red-700 dark:text-red-300 bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/30 border-red-200 dark:border-red-800'
+                          : 'text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/30 border-blue-200 dark:border-blue-800'
+                        }`}
+                      title={
+                        expandedPatients.has(patient.id)
+                          ? 'Hide details of Medications, Reminders and Appointments'
+                          : 'Show details of Medications, Reminders and Appointments'
+                      }
+                    >
+                      {expandedPatients.has(patient.id) ? (
+                        <>
+                          <ChevronUp className="w-4 h-4" />
+                          Hide Details
+                        </>
+                      ) : (
+                        <>
+                          <ChevronDown className="w-4 h-4" />
+                          Show Details
+                        </>
+                      )}
+                    </button>
                   </div>
 
                   {/* Expanded Content */}
                   {expandedPatients.has(patient.id) && (
                     <div className="border-t border-gray-200 dark:border-gray-700">
-                      {/* Tab Navigation */}
+                      {/* Tab Navigation - modern segmented control */}
                       {(() => {
                         const currentTab = activeTab[patient.id] ?? 'medications';
                         return (
-                          <div className="flex border-b border-gray-200 dark:border-gray-700">
-                        <button
-                          onClick={() => setPatientTab(patient.id, 'medications')}
-                          className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 text-sm font-medium transition-colors min-h-[44px] ${
-                            currentTab === 'medications'
-                              ? 'bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 border-b-2 border-green-500'
-                              : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700'
-                          }`}
-                        >
-                          <Pill className="w-4 h-4" />
-                          Medications ({patientData[patient.id]?.medications?.length || 0})
-                        </button>
-                        <button
-                          onClick={() => setPatientTab(patient.id, 'reminders')}
-                          className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 text-sm font-medium transition-colors min-h-[44px] ${
-                            currentTab === 'reminders'
-                              ? 'bg-yellow-50 dark:bg-yellow-900/20 text-yellow-600 dark:text-yellow-400 border-b-2 border-yellow-500'
-                              : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700'
-                          }`}
-                        >
-                          <Bell className="w-4 h-4" />
-                          Reminders ({patientData[patient.id]?.reminders?.length || 0})
-                        </button>
-                        <button
-                          onClick={() => setPatientTab(patient.id, 'appointments')}
-                          className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 text-sm font-medium transition-colors min-h-[44px] ${
-                            currentTab === 'appointments'
-                              ? 'bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400 border-b-2 border-purple-500'
-                              : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700'
-                          }`}
-                        >
-                          <Calendar className="w-4 h-4" />
-                          Appointments ({patientData[patient.id]?.appointments?.length || 0})
-                        </button>
+                          <div className="px-6 pt-2">
+                            <div className="flex items-center justify-between gap-2 bg-white/80 dark:bg-gray-900/60 border border-gray-200 dark:border-gray-700 rounded-xl p-1 shadow-sm">
+                              <button
+                                onClick={() => setPatientTab(patient.id, 'medications')}
+                                className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium rounded-lg transition-all min-h-[40px] ${currentTab === 'medications' ? 'bg-blue-600 text-white shadow' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'}`}
+                              >
+                                <Pill className="w-4 h-4" />
+                                <span>Medications</span>
+                                <span className={`ml-1 inline-flex items-center justify-center px-1.5 min-w-[22px] h-5 text-[11px] rounded-full ${currentTab === 'medications' ? 'bg-white/20' : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200'}`}>
+                                  {patientData[patient.id]?.medications?.length || 0}
+                                </span>
+                              </button>
+                              <button
+                                onClick={() => setPatientTab(patient.id, 'reminders')}
+                                className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium rounded-lg transition-all min-h-[40px] ${currentTab === 'reminders' ? 'bg-blue-600 text-white shadow' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'}`}
+                              >
+                                <Bell className="w-4 h-4" />
+                                <span>Reminders</span>
+                                <span className={`ml-1 inline-flex items-center justify-center px-1.5 min-w-[22px] h-5 text-[11px] rounded-full ${currentTab === 'reminders' ? 'bg-white/20' : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200'}`}>
+                                  {patientData[patient.id]?.reminders?.length || 0}
+                                </span>
+                              </button>
+                              <button
+                                onClick={() => setPatientTab(patient.id, 'appointments')}
+                                className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium rounded-lg transition-all min-h-[40px] ${currentTab === 'appointments' ? 'bg-blue-600 text-white shadow' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'}`}
+                              >
+                                <Calendar className="w-4 h-4" />
+                                <span>Appointments</span>
+                                <span className={`ml-1 inline-flex items-center justify-center px-1.5 min-w-[22px] h-5 text-[11px] rounded-full ${currentTab === 'appointments' ? 'bg-white/20' : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200'}`}>
+                                  {patientData[patient.id]?.appointments?.length || 0}
+                                </span>
+                              </button>
+                            </div>
                           </div>
                         );
                       })()}
@@ -1184,9 +1252,9 @@ export default function PatientsTab({ user }: PatientsTabProps) {
                           const currentTab = activeTab[patient.id] ?? 'medications';
                           return (
                             <>
-                              {currentTab === 'medications' && renderMedications(patient.id)}
-                              {currentTab === 'reminders' && renderReminders(patient.id)}
-                              {currentTab === 'appointments' && renderAppointments(patient.id)}
+                              {currentTab === 'medications' && renderMedications(patient.id, patient.timezone)}
+                              {currentTab === 'reminders' && renderReminders(patient.id, patient.timezone)}
+                              {currentTab === 'appointments' && renderAppointments(patient.id, patient.timezone)}
                             </>
                           );
                         })()}
@@ -1297,6 +1365,57 @@ export default function PatientsTab({ user }: PatientsTabProps) {
 
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Time Zone
+            </label>
+            <select
+              name="timezone"
+              value={form.timezone}
+              onChange={handleChange}
+              className="w-full px-4 py-3 rounded-xl bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-teal-500 focus:border-transparent min-h-[44px]"
+            >
+              <option value="">Select time zone</option>
+              {/* Negative offsets (descending) */}
+              <option value="Pacific/Pago_Pago">Pacific/Pago_Pago (UTC-11:00, American Samoa)</option>
+              <option value="Pacific/Honolulu">Pacific/Honolulu (UTC-10:00, Honolulu)</option>
+              <option value="America/Anchorage">America/Anchorage (UTC-09:00, Anchorage)</option>
+              <option value="America/Los_Angeles">America/Los_Angeles (UTC-08:00, Los Angeles)</option>
+              <option value="America/Denver">America/Denver (UTC-07:00, Denver)</option>
+              <option value="America/Mexico_City">America/Mexico_City (UTC-06:00, Mexico City)</option>
+              <option value="America/New_York">America/New_York (UTC-05:00, New York)</option>
+              <option value="America/Santiago">America/Santiago (UTC-04:00, Santiago)</option>
+              <option value="America/Sao_Paulo">America/Sao_Paulo (UTC-03:00, São Paulo)</option>
+              <option value="America/Noronha">America/Noronha (UTC-02:00, Noronha)</option>
+              <option value="Atlantic/Azores">Atlantic/Azores (UTC-01:00, Azores)</option>
+              {/* UTC pivot */}
+              <option value="UTC">UTC (UTC±00:00)</option>
+              <option value="Europe/London">Europe/London (UTC+00:00, London)</option>
+              {/* Positive offsets (ascending) - one major city per offset */}
+              <option value="Europe/Berlin">Europe/Berlin (UTC+01:00, Berlin)</option>
+              <option value="Africa/Cairo">Africa/Cairo (UTC+02:00, Cairo)</option>
+              <option value="Asia/Riyadh">Asia/Riyadh (UTC+03:00, Riyadh)</option>
+              <option value="Asia/Tehran">Asia/Tehran (UTC+03:30, Tehran)</option>
+              <option value="Asia/Dubai">Asia/Dubai (UTC+04:00, Dubai)</option>
+              <option value="Asia/Kabul">Asia/Kabul (UTC+04:30, Kabul)</option>
+              <option value="Asia/Karachi">Asia/Karachi (UTC+05:00, Karachi)</option>
+              <option value="Asia/Kolkata">Asia/Kolkata (UTC+05:30, Kolkata)</option>
+              <option value="Asia/Kathmandu">Asia/Kathmandu (UTC+05:45, Kathmandu)</option>
+              <option value="Asia/Dhaka">Asia/Dhaka (UTC+06:00, Dhaka)</option>
+              <option value="Asia/Yangon">Asia/Yangon (UTC+06:30, Yangon)</option>
+              <option value="Asia/Bangkok">Asia/Bangkok (UTC+07:00, Bangkok)</option>
+              <option value="Asia/Shanghai">Asia/Shanghai (UTC+08:00, Shanghai)</option>
+              <option value="Asia/Tokyo">Asia/Tokyo (UTC+09:00, Tokyo)</option>
+              <option value="Australia/Adelaide">Australia/Adelaide (UTC+09:30, Adelaide)</option>
+              <option value="Australia/Sydney">Australia/Sydney (UTC+10:00, Sydney)</option>
+              <option value="Pacific/Noumea">Pacific/Noumea (UTC+11:00, Nouméa)</option>
+              <option value="Pacific/Auckland">Pacific/Auckland (UTC+12:00, Auckland)</option>
+            </select>
+            <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+              Used to display reminders and appointments in the patient’s local time.
+            </p>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               Address
             </label>
             <textarea
@@ -1369,9 +1488,10 @@ export default function PatientsTab({ user }: PatientsTabProps) {
             <div className="flex gap-4">
               <button
                 onClick={() => handleDelete(showDeleteConfirm)}
-                className="flex-1 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition-colors min-h-[44px]"
+                disabled={deletingPatientId === showDeleteConfirm}
+                className="flex-1 px-4 py-2 bg-red-600 hover:bg-red-700 disabled:bg-red-500/60 disabled:cursor-not-allowed text-white rounded-lg font-medium transition-colors min-h-[44px]"
               >
-                Delete
+                {deletingPatientId === showDeleteConfirm ? 'Deleting...' : 'Delete'}
               </button>
               <button
                 onClick={() => setShowDeleteConfirm(null)}

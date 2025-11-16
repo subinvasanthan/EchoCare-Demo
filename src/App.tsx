@@ -10,11 +10,12 @@ import FAQ from './components/FAQ';
 import Footer from './components/Footer';
 import Dashboard from './components/Dashboard';
 import AuthCallback from './components/AuthCallback';
+import ConfirmEmail from './components/ConfirmEmail';
 
 
 function App() {
   const [darkMode, setDarkMode] = useState(false);
-  const [currentView, setCurrentView] = useState<'landing' | 'dashboard' | 'auth-callback' | 'signin' | 'signup' | 'forgot' | 'reset-password'>('landing');
+  const [currentView, setCurrentView] = useState<'landing' | 'dashboard' | 'auth-callback' | 'confirm' | 'signin' | 'signup' | 'forgot' | 'reset-password'>('landing');
   const [user, setUser] = useState<any>(null);
 
   // theme init
@@ -37,6 +38,7 @@ function App() {
 
       if (path === '/dashboard') setCurrentView(session ? 'dashboard' : 'landing');
       else if (path === '/auth/callback') setCurrentView('auth-callback');
+      else if (path === '/auth/confirm') setCurrentView('confirm');
       else if (path === '/signin') setCurrentView('signin');
       else if (path === '/signup') setCurrentView('signup');
       else if (path === '/forgot') setCurrentView('forgot');
@@ -67,6 +69,7 @@ function App() {
       const path = window.location.pathname;
       if (path === '/dashboard') setCurrentView(user ? 'dashboard' : 'landing');
       else if (path === '/auth/callback') setCurrentView('auth-callback');
+      else if (path === '/auth/confirm') setCurrentView('confirm');
       else if (path === '/signin') setCurrentView('signin');
       else if (path === '/signup') setCurrentView('signup');
       else if (path === '/forgot') setCurrentView('forgot');
@@ -91,6 +94,17 @@ function App() {
     return (
       <div className="min-h-screen bg-white dark:bg-gray-900 transition-colors duration-300">
         <Dashboard darkMode={darkMode} toggleDarkMode={toggleDarkMode} />
+      </div>
+    );
+  }
+
+  if (currentView === 'confirm') {
+    return (
+      <div className="min-h-screen bg-white dark:bg-gray-900 transition-colors duration-300">
+        <Header darkMode={darkMode} toggleDarkMode={toggleDarkMode} user={user} />
+        <div className="max-w-lg mx-auto px-4 py-10">
+          <ConfirmEmail />
+        </div>
       </div>
     );
   }
@@ -212,7 +226,8 @@ function SignUpCard() {
       options: {
         data: {
           full_name: name // ✅ This stores the name in user_metadata
-        }
+        },
+        emailRedirectTo: `${window.location.origin}/auth/confirm`
       }
     });
 

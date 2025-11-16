@@ -53,7 +53,7 @@ export default function Dashboard({ darkMode, toggleDarkMode }: DashboardProps) 
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-b from-purple-50 via-blue-50 to-teal-50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-900 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-teal-500 mx-auto mb-4" />
           <p className="text-gray-600 dark:text-gray-300">Loading dashboard...</p>
@@ -64,7 +64,7 @@ export default function Dashboard({ darkMode, toggleDarkMode }: DashboardProps) 
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-b from-purple-50 via-blue-50 to-teal-50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-900 flex items-center justify-center">
         <div className="text-center">
           <p className="text-gray-600 dark:text-gray-300">Please sign in to access the dashboard.</p>
         </div>
@@ -73,9 +73,9 @@ export default function Dashboard({ darkMode, toggleDarkMode }: DashboardProps) 
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen bg-gradient-to-b from-purple-50 via-blue-50 to-teal-50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-900">
       {/* Header */}
-      <header className="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700">
+      <header className="sticky top-0 z-40 supports-[backdrop-filter]:backdrop-blur bg-gradient-to-b from-teal-900/90 via-sky-900/80 to-indigo-900/70 shadow-sm border-b border-slate-700/60 dark:border-gray-800/70">
         <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
           <button
             onClick={() => go('/')}
@@ -83,36 +83,36 @@ export default function Dashboard({ darkMode, toggleDarkMode }: DashboardProps) 
             aria-label="Back to Home"
             title="Back to Home"
           >
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white hover:underline">
+            <h1 className="text-2xl font-bold text-white">
               EchoCare Caregiver Console
             </h1>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{user.email}</p>
+            <p className="text-sm text-gray-200/80 mt-1">{user.email}</p>
           </button>
 
           <div className="flex items-center gap-2">
             {/* Back to Home */}
             <button
               onClick={() => go('/')}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors min-h-[44px]"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-white/20 text-white hover:bg-white/10 transition-colors min-h-[44px]"
             >
-              <ArrowLeft className="w-4 h-4" />
+              <ArrowLeft className="w-4 h-4 text-white" />
               Back to Home
             </button>
             {/* Theme Toggle */}
             <button
               onClick={toggleDarkMode}
-              className="inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors min-h-[44px]"
+              className="inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-white/20 text-white hover:bg-white/10 transition-colors min-h-[44px]"
               aria-label={darkMode ? 'Switch to light mode' : 'Switch to dark mode'}
               title={darkMode ? 'Switch to light mode' : 'Switch to dark mode'}
             >
               {darkMode ? (
                 <>
-                  <Sun className="w-4 h-4 text-amber-400" />
+                  <Sun className="w-4 h-4 text-yellow-300" />
                   Light
                 </>
               ) : (
                 <>
-                  <Moon className="w-4 h-4 text-blue-500" />
+                  <Moon className="w-4 h-4 text-blue-200" />
                   Dark
                 </>
               )}
@@ -120,9 +120,9 @@ export default function Dashboard({ darkMode, toggleDarkMode }: DashboardProps) 
             {/* Logout */}
             <button
               onClick={handleSignOut}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors min-h-[44px]"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-white/20 text-white hover:bg-white/10 transition-colors min-h-[44px]"
             >
-              <LogOut className="w-4 h-4" />
+              <LogOut className="w-4 h-4 text-white" />
               Logout
             </button>
           </div>

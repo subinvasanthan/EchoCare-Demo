@@ -22,28 +22,47 @@ export default function Header({ darkMode, toggleDarkMode, user }: HeaderProps) 
     window.dispatchEvent(new PopStateEvent('popstate'));
   };
 
+  const goHomeAndScrollHero = () => {
+    const scrollToHero = () => {
+      const el = document.getElementById('hero');
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      } else {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    };
+
+    if (window.location.pathname !== '/') {
+      go('/');
+      // wait a tick for content to render
+      setTimeout(scrollToHero, 50);
+    } else {
+      scrollToHero();
+    }
+  };
+
   return (
     <header
-      className={`sticky top-0 z-50 py-4 px-4 sm:px-6 lg:px-8 transition-all duration-200 ${
-        scrolled
-          ? 'backdrop-blur supports-[backdrop-filter]:bg-slate-900/90 dark:supports-[backdrop-filter]:bg-gray-950/85 border-b border-slate-700/60 dark:border-gray-800/70 shadow-sm'
-          : 'supports-[backdrop-filter]:backdrop-blur bg-gradient-to-b from-teal-900/90 via-sky-900/80 to-indigo-900/70'
-      }`}
+      className={`sticky top-0 z-50 py-4 px-4 sm:px-6 lg:px-8 transition-all duration-200 supports-[backdrop-filter]:backdrop-blur bg-gradient-to-b from-teal-900/90 via-sky-900/80 to-indigo-900/70`}
     >
       <div className="max-w-7xl mx-auto flex items-center justify-between">
         {/* Left: Logo */}
-        <div className="flex items-center space-x-3">
+        <button
+          onClick={goHomeAndScrollHero}
+          className="flex items-center space-x-3 group"
+          aria-label="Go to EchoCare home"
+        >
           <div className="relative">
             <Heart 
-              className="w-10 h-10 text-teal-400 fill-current drop-shadow" 
-              aria-label="EchoCare heart logo"
+              className="w-10 h-10 text-teal-400 fill-current drop-shadow group-hover:scale-105 transition-transform" 
+              aria-hidden="true"
             />
             <div className="absolute -top-1 -left-1 w-3 h-3 bg-orange-400 rounded-full animate-pulse"></div>
           </div>
           <span className="text-2xl font-bold text-white font-nunito drop-shadow-sm">
             EchoCare
           </span>
-        </div>
+        </button>
 
         {/* Right: Auth or Profile + Dark mode */}
         <div className="flex items-center space-x-3">

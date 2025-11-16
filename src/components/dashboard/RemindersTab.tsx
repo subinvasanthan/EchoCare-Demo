@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
+import { toZonedOffsetISOString } from '../../lib/time';
 import { WebhookService } from '../../lib/webhook';
 import { Plus, Check, AlertCircle } from 'lucide-react';
 
@@ -10,6 +11,7 @@ interface RemindersTabProps {
 interface CareRecipient {
   id: string;
   full_name: string;
+  timezone?: string | null;
 }
 
 export default function RemindersTab({ user }: RemindersTabProps) {
@@ -40,7 +42,7 @@ export default function RemindersTab({ user }: RemindersTabProps) {
   const fetchPatients = async () => {
     const { data, error } = await supabase
       .from('care_recipients')
-      .select('id, full_name')
+      .select('id, full_name, timezone')
       .eq('owner_id', user.id)
       .order('full_name');
 
@@ -89,6 +91,16 @@ function handleSubmit(e: React.FormEvent) {
   setSubmitting(true);
   setMessage(null);
 
+  // Convert entered local datetimes to UTC using the patient's timezone
+  const selectedPatient = patients.find(p => p.id === form.patient_id);
+  const tz = selectedPatient?.timezone || undefined;
+  const startWithOffset = form.start_datetime && tz
+    ? toZonedOffsetISOString(form.start_datetime, tz)
+    : (form.start_datetime || null);
+  const endWithOffset = form.end_datetime && tz
+    ? toZonedOffsetISOString(form.end_datetime, tz)
+    : (form.end_datetime || null);
+
   supabase
     .from('general_reminders')
     .insert([
@@ -98,8 +110,8 @@ function handleSubmit(e: React.FormEvent) {
         description: form.description,
         frequency_unit: form.frequency_unit,
         frequency_value: form.frequency_value,
-        start_datetime: form.start_datetime || null,
-        end_datetime: form.end_datetime || null,
+        start_datetime: startWithOffset,
+        end_datetime: endWithOffset,
         repeat_count: form.repeat_count,
         notify_channel: notifyChannel,
         notify_sms: form.notify_sms,
@@ -123,8 +135,8 @@ function handleSubmit(e: React.FormEvent) {
           description: form.description,
           frequency_unit: form.frequency_unit,
           frequency_value: form.frequency_value,
-          start_datetime: form.start_datetime,
-          end_datetime: form.end_datetime,
+          start_datetime: startWithOffset,
+          end_datetime: endWithOffset,
           repeat_count: form.repeat_count,
           notify_channel: notifyChannel,
           notify_sms: form.notify_sms,

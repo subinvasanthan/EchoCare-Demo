@@ -105,7 +105,7 @@ export default function Footer() {
             }}
             className="text-sm text-gray-500 hover:text-gray-300 transition-colors focus:outline-none focus:underline"
           >
-            Sign-up
+            .
           </button>
         </div>
       </div>

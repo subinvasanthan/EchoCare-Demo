@@ -10,7 +10,7 @@ export default function Hero() {
   };
 
   return (
-    <section className="relative isolate overflow-hidden py-12 sm:py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-teal-50 via-blue-50 to-purple-50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-900">
+    <section id="hero" className="relative isolate overflow-hidden py-12 sm:py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-teal-50 via-blue-50 to-purple-50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-900">
       {/* Decorative gradient blobs */}
       <div className="hidden sm:block pointer-events-none select-none absolute -top-24 -right-24 w-80 h-80 bg-teal-200/60 dark:bg-teal-900/30 rounded-full blur-3xl animate-float -z-10"></div>
       <div className="hidden sm:block pointer-events-none select-none absolute -bottom-24 -left-24 w-96 h-96 bg-blue-200/60 dark:bg-blue-900/30 rounded-full blur-3xl animate-float-reverse -z-10"></div>

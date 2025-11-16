@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
+import { toZonedOffsetISOString } from '../../lib/time';
 import { WebhookService } from '../../lib/webhook';
 import { Plus, Check, AlertCircle } from 'lucide-react';
 
@@ -10,6 +11,7 @@ interface AppointmentsTabProps {
 interface CareRecipient {
   id: string;
   full_name: string;
+  timezone?: string | null;
 }
 
 export default function AppointmentsTab({ user }: AppointmentsTabProps) {
@@ -40,7 +42,7 @@ export default function AppointmentsTab({ user }: AppointmentsTabProps) {
   const fetchPatients = async () => {
     const { data, error } = await supabase
       .from('care_recipients')
-      .select('id, full_name')
+      .select('id, full_name, timezone')
       .eq('owner_id', user.id)
       .order('full_name');
 
@@ -78,8 +80,16 @@ const handleSubmit = async (e: React.FormEvent) => {
       created_by: user.id,
     };
 
+    // Convert appointment local datetime to UTC using patient timezone
+    const selectedPatient = patients.find(p => p.id === form.patient_id);
+    const tz = selectedPatient?.timezone || undefined;
+    const appointmentWithOffset = form.appointment_at && tz
+      ? toZonedOffsetISOString(form.appointment_at, tz)
+      : (form.appointment_at || null);
+
     const response = await supabase.from('appointments').insert({
       ...insertPayload,
+      appointment_at: appointmentWithOffset,
       remind_2days: form.remind_2days,
       remind_1hour: form.remind_1hour,
       notify_sms: form.notify_sms,
@@ -95,6 +105,7 @@ const handleSubmit = async (e: React.FormEvent) => {
       // Send webhook notification
       WebhookService.sendAppointmentCreated({
         ...insertPayload,
+        appointment_at: appointmentWithOffset,
         remind_2days: form.remind_2days,
         remind_1hour: form.remind_1hour,
         notify_sms: form.notify_sms,
