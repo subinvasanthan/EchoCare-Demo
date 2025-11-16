@@ -76,54 +76,56 @@ export default function Dashboard({ darkMode, toggleDarkMode }: DashboardProps) 
     <div className="min-h-screen bg-gradient-to-b from-purple-50 via-blue-50 to-teal-50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-900">
       {/* Header */}
       <header className="sticky top-0 z-40 supports-[backdrop-filter]:backdrop-blur bg-gradient-to-b from-teal-900/90 via-sky-900/80 to-indigo-900/70 shadow-sm border-b border-slate-700/60 dark:border-gray-800/70">
-        <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
+        <div className="max-w-7xl mx-auto px-4 py-3 sm:py-4 flex items-center justify-between gap-3 flex-wrap">
           <button
             onClick={() => go('/')}
             className="text-left"
             aria-label="Back to Home"
             title="Back to Home"
           >
-            <h1 className="text-2xl font-bold text-white">
+            <h1 className="text-lg sm:text-2xl font-bold text-white leading-tight">
               EchoCare Caregiver Console
             </h1>
-            <p className="text-sm text-gray-200/80 mt-1">{user.email}</p>
+            <p className="text-xs sm:text-sm text-gray-200/80 mt-1 break-all">{user.email}</p>
           </button>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap justify-end">
             {/* Back to Home */}
             <button
               onClick={() => go('/')}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-white/20 text-white hover:bg-white/10 transition-colors min-h-[44px]"
+              aria-label="Back to Home"
+              className="inline-flex items-center gap-2 px-2.5 py-1.5 sm:px-4 sm:py-2 rounded-lg border border-white/20 text-white hover:bg-white/10 transition-colors min-h-[36px] sm:min-h-[44px] text-xs sm:text-sm"
             >
               <ArrowLeft className="w-4 h-4 text-white" />
-              Back to Home
+              <span className="hidden sm:inline">Back to Home</span>
             </button>
             {/* Theme Toggle */}
             <button
               onClick={toggleDarkMode}
-              className="inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-white/20 text-white hover:bg-white/10 transition-colors min-h-[44px]"
+              className="inline-flex items-center gap-2 px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-lg border border-white/20 text-white hover:bg-white/10 transition-colors min-h-[36px] sm:min-h-[44px] text-xs sm:text-sm"
               aria-label={darkMode ? 'Switch to light mode' : 'Switch to dark mode'}
               title={darkMode ? 'Switch to light mode' : 'Switch to dark mode'}
             >
               {darkMode ? (
                 <>
                   <Sun className="w-4 h-4 text-yellow-300" />
-                  Light
+                  <span className="hidden sm:inline">Light</span>
                 </>
               ) : (
                 <>
                   <Moon className="w-4 h-4 text-blue-200" />
-                  Dark
+                  <span className="hidden sm:inline">Dark</span>
                 </>
               )}
             </button>
             {/* Logout */}
             <button
               onClick={handleSignOut}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-white/20 text-white hover:bg-white/10 transition-colors min-h-[44px]"
+              aria-label="Logout"
+              className="inline-flex items-center gap-2 px-2.5 py-1.5 sm:px-4 sm:py-2 rounded-lg border border-white/20 text-white hover:bg-white/10 transition-colors min-h-[36px] sm:min-h-[44px] text-xs sm:text-sm"
             >
               <LogOut className="w-4 h-4 text-white" />
-              Logout
+              <span className="hidden sm:inline">Logout</span>
             </button>
           </div>
         </div>

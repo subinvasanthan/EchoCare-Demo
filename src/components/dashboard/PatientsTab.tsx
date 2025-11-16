@@ -669,7 +669,7 @@ export default function PatientsTab({ user }: PatientsTabProps) {
 
       return (
         <div key={med.id} className={`${containerStyles} rounded-xl p-4`}>
-          <div className="flex items-start justify-between">
+          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
             <div className="flex-1">
               <h4 className="font-semibold text-gray-900 dark:text-gray-100">{med.medicine_name}</h4>
               <p className="text-sm text-gray-700 dark:text-gray-300">
@@ -803,7 +803,7 @@ export default function PatientsTab({ user }: PatientsTabProps) {
                   key={reminder.id}
                   className="rounded-xl p-4 border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all bg-white dark:bg-gray-900"
                 >
-                  <div className="flex items-start justify-between">
+                  <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
                     <div className="flex-1 text-gray-900 dark:text-gray-100">
                       <h4 className="font-semibold"> {reminder.title}</h4>
                       {reminder.description && (
@@ -858,7 +858,7 @@ export default function PatientsTab({ user }: PatientsTabProps) {
                 key={reminder.id}
                 className="rounded-xl p-4 border border-gray-200 dark:border-gray-700 shadow-sm bg-white/90 dark:bg-gray-900/80"
               >
-                <div className="flex items-start justify-between">
+                <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
                   <div className="flex-1 text-gray-900 dark:text-gray-100">
                     <h4 className="font-semibold">{reminder.title}</h4>
                     {reminder.description && (
@@ -960,7 +960,7 @@ export default function PatientsTab({ user }: PatientsTabProps) {
                 key={appointment.id}
                 className="rounded-xl p-4 border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all bg-white dark:bg-gray-900"
               >
-                <div className="flex items-start justify-between">
+                <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
                   <div className="flex-1 text-gray-900 dark:text-gray-100">
                     <h4 className="font-semibold">Dr. {appointment.doctor_name}</h4>
                     <p className="text-sm text-gray-800/90 dark:text-gray-200/90">{appointment.specialization}</p>
@@ -1023,7 +1023,7 @@ export default function PatientsTab({ user }: PatientsTabProps) {
                 key={appointment.id}
                 className="rounded-xl p-4 border border-gray-200 dark:border-gray-700 shadow-sm bg-white/90 dark:bg-gray-900/80"
               >
-                <div className="flex items-start justify-between">
+                <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
                   <div className="flex-1 text-gray-900 dark:text-gray-100">
                     <h4 className="font-semibold">Dr. {appointment.doctor_name}</h4>
                     <p className="text-sm">{appointment.specialization}</p>
@@ -1056,11 +1056,11 @@ export default function PatientsTab({ user }: PatientsTabProps) {
   };
 
   return (
-    <div className="p-8">
+    <div className="p-4 sm:p-8">
       {/* Header */}
-      <div className="flex items-center gap-3 mb-8">
+      <div className="flex items-center gap-3 mb-6 sm:mb-8">
         <User className="w-6 h-6 text-blue-600" />
-        <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+        <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
           {editingPatient ? 'Edit Patient' : 'Manage Patients'}
         </h2>
       </div>
@@ -1115,13 +1115,13 @@ export default function PatientsTab({ user }: PatientsTabProps) {
               {filteredPatients.map((patient) => (
                 <div key={patient.id} className="bg-blue-50/70 dark:bg-gray-800/40 rounded-xl shadow-sm border border-blue-200 dark:border-gray-700">
                   {/* Patient Header */}
-                  <div className="p-6">
-                    <div className="flex justify-between items-start mb-4">
+                  <div className="p-4 sm:p-6">
+                    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3 mb-4">
                       <div className="flex-1">
-                        <h4 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+                        <h4 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white mb-2">
                           {patient.full_name}
                         </h4>
-                        <div className="grid md:grid-cols-2 gap-4 text-sm text-gray-600 dark:text-gray-300">
+                        <div className="grid md:grid-cols-2 gap-3 sm:gap-4 text-sm text-gray-600 dark:text-gray-300">
                           {patient.primary_contact && (
                             <div className="flex items-center gap-2">
                               <Phone className="w-4 h-4" />
@@ -1174,7 +1174,7 @@ export default function PatientsTab({ user }: PatientsTabProps) {
                   </div>
 
                   {/* Expand/Collapse control below header - light tone, pull-down feel */}
-                  <div className="px-6 pb-4 -mt-2">
+                  <div className="px-4 sm:px-6 pb-4 -mt-2">
                     <button
                       onClick={() => togglePatientExpansion(patient.id)}
                       className={`w-full py-2.5 text-sm font-medium rounded-b-xl rounded-t-md transition-colors flex items-center justify-center gap-2 border
@@ -1209,35 +1209,35 @@ export default function PatientsTab({ user }: PatientsTabProps) {
                       {(() => {
                         const currentTab = activeTab[patient.id] ?? 'medications';
                         return (
-                          <div className="px-6 pt-2">
-                            <div className="flex items-center justify-between gap-2 bg-white/80 dark:bg-gray-900/60 border border-gray-200 dark:border-gray-700 rounded-xl p-1 shadow-sm">
+                          <div className="px-4 sm:px-6 pt-2">
+                            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-1.5 sm:gap-2 bg-white/80 dark:bg-gray-900/60 border border-gray-200 dark:border-gray-700 rounded-xl p-1 shadow-sm">
                               <button
                                 onClick={() => setPatientTab(patient.id, 'medications')}
-                                className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium rounded-lg transition-all min-h-[40px] ${currentTab === 'medications' ? 'bg-blue-600 text-white shadow' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'}`}
+                                className={`flex-1 flex items-center justify-center gap-2 px-3 sm:px-4 py-2 sm:py-2.5 text-sm font-medium rounded-lg transition-all min-h-[38px] sm:min-h-[40px] ${currentTab === 'medications' ? 'bg-blue-600 text-white shadow' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'}`}
                               >
                                 <Pill className="w-4 h-4" />
                                 <span>Medications</span>
-                                <span className={`ml-1 inline-flex items-center justify-center px-1.5 min-w-[22px] h-5 text-[11px] rounded-full ${currentTab === 'medications' ? 'bg-white/20' : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200'}`}>
+                                <span className={`ml-1 inline-flex items-center justify-center px-1.5 min-w-[22px] h-5 text-[10px] sm:text-[11px] rounded-full ${currentTab === 'medications' ? 'bg-white/20' : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200'}`}>
                                   {patientData[patient.id]?.medications?.length || 0}
                                 </span>
                               </button>
                               <button
                                 onClick={() => setPatientTab(patient.id, 'reminders')}
-                                className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium rounded-lg transition-all min-h-[40px] ${currentTab === 'reminders' ? 'bg-blue-600 text-white shadow' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'}`}
+                                className={`flex-1 flex items-center justify-center gap-2 px-3 sm:px-4 py-2 sm:py-2.5 text-sm font-medium rounded-lg transition-all min-h-[38px] sm:min-h-[40px] ${currentTab === 'reminders' ? 'bg-blue-600 text-white shadow' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'}`}
                               >
                                 <Bell className="w-4 h-4" />
                                 <span>Reminders</span>
-                                <span className={`ml-1 inline-flex items-center justify-center px-1.5 min-w-[22px] h-5 text-[11px] rounded-full ${currentTab === 'reminders' ? 'bg-white/20' : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200'}`}>
+                                <span className={`ml-1 inline-flex items-center justify-center px-1.5 min-w-[22px] h-5 text-[10px] sm:text-[11px] rounded-full ${currentTab === 'reminders' ? 'bg-white/20' : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200'}`}>
                                   {patientData[patient.id]?.reminders?.length || 0}
                                 </span>
                               </button>
                               <button
                                 onClick={() => setPatientTab(patient.id, 'appointments')}
-                                className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium rounded-lg transition-all min-h-[40px] ${currentTab === 'appointments' ? 'bg-blue-600 text-white shadow' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'}`}
+                                className={`flex-1 flex items-center justify-center gap-2 px-3 sm:px-4 py-2 sm:py-2.5 text-sm font-medium rounded-lg transition-all min-h-[38px] sm:min-h-[40px] ${currentTab === 'appointments' ? 'bg-blue-600 text-white shadow' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'}`}
                               >
                                 <Calendar className="w-4 h-4" />
                                 <span>Appointments</span>
-                                <span className={`ml-1 inline-flex items-center justify-center px-1.5 min-w-[22px] h-5 text-[11px] rounded-full ${currentTab === 'appointments' ? 'bg-white/20' : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200'}`}>
+                                <span className={`ml-1 inline-flex items-center justify-center px-1.5 min-w-[22px] h-5 text-[10px] sm:text-[11px] rounded-full ${currentTab === 'appointments' ? 'bg-white/20' : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200'}`}>
                                   {patientData[patient.id]?.appointments?.length || 0}
                                 </span>
                               </button>
@@ -1247,7 +1247,7 @@ export default function PatientsTab({ user }: PatientsTabProps) {
                       })()}
 
                       {/* Tab Content */}
-                      <div className="p-6">
+                      <div className="p-4 sm:p-6">
                         {(() => {
                           const currentTab = activeTab[patient.id] ?? 'medications';
                           return (
@@ -1269,7 +1269,7 @@ export default function PatientsTab({ user }: PatientsTabProps) {
       )}
 
       {/* Add/Edit Form */}
-      <div className="bg-gray-50 dark:bg-gray-800/50 rounded-xl p-6">
+      <div className="bg-gray-50 dark:bg-gray-800/50 rounded-xl p-4 sm:p-6">
         <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">
           {editingPatient ? 'Edit Patient Details' : 'Add New Patient'}
         </h3>
